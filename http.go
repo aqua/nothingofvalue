@@ -20,6 +20,7 @@ var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ12345
 //go:embed content/1g.zstd content/10g.zstd
 //go:embed content/tlds.txt
 //go:embed content/16384.webp content/225000x225000.png.gz
+//go:embed content/50000x50000.jpeg.gz
 //go:embed content/overlapping.zip content/zero.gz.gz
 var content embed.FS
 
@@ -157,6 +158,8 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// <david/at/bamsoftware/dot/com> for that one.
 	case strings.HasSuffix(r.URL.Path, ".png") && supportsEncoding(r, "gzip"):
 		h.serveEncodedFile(w, "gzip", "image/png", "content/225000x225000.png.gz")
+	case (strings.HasSuffix(r.URL.Path, ".jpeg") || strings.HasSuffix(r.URL.Path, ".jpg")) && supportsEncoding(r, "gzip"):
+		h.serveEncodedFile(w, "gzip", "image/png", "content/50000x50000.jpeg.gz")
 	// WebP needs no such contrivances
 	case strings.HasSuffix(r.URL.Path, ".webp"):
 		h.serveFile(w, "image/webp", "content/16384.webp")
