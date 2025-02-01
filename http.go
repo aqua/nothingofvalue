@@ -308,7 +308,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(r.URL.Path, ".png") && supportsEncoding(r, "gzip"):
 		h.serveEncodedFile(w, "gzip", "image/png", "content/225000x225000.png.gz")
 	case (strings.HasSuffix(r.URL.Path, ".jpeg") || strings.HasSuffix(r.URL.Path, ".jpg")) && supportsEncoding(r, "gzip"):
-		h.serveEncodedFile(w, "gzip", "image/png", "content/50000x50000.jpeg.gz")
+		h.serveEncodedFile(w, "gzip", "image/jpeg", "content/50000x50000.jpeg.gz")
 	// WebP needs no such contrivances
 	case strings.HasSuffix(r.URL.Path, ".webp"):
 		h.serveFile(w, "image/webp", "content/16384.webp")
