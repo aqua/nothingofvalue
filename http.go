@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync/atomic"
+	"time"
 )
 
 var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")))
@@ -26,9 +28,18 @@ var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ12345
 var content embed.FS
 
 type Handler struct {
+	activeSlowResponses atomic.Int32
+
+	// Limit to how many slow responses can be outstanding at a time.  Beyond
+	// this limit, requests eligible for slow responses will receive fast empty
+	// ones instead.
+	SlowResponseLimit int32
+
+	// How long to spend issuing a slow response.
+	SlowResponseDeadline time.Duration
 }
 
-func (h Handler) serveEncodedFile(w http.ResponseWriter, enc, ct, fn string) {
+func (h *Handler) serveEncodedFile(w http.ResponseWriter, enc, ct, fn string) {
 	f, err := content.Open(fn)
 	if err != nil {
 		log.Printf("missing embedded file %s: %v", fn, err)
@@ -45,7 +56,7 @@ func (h Handler) serveEncodedFile(w http.ResponseWriter, enc, ct, fn string) {
 	io.Copy(w, f)
 }
 
-func (h Handler) serveFile(w http.ResponseWriter, ct, fn string) {
+func (h *Handler) serveFile(w http.ResponseWriter, ct, fn string) {
 	h.serveEncodedFile(w, "", ct, fn)
 }
 
@@ -111,13 +122,26 @@ func randUpperAlphaNumeric(n int) string     { return randString(upperAlphaNumer
 func randAlphaMixedCaseNumeric(n int) string { return randString(alphaMixedCaseNumerics, n) }
 func randPassword(n int) string              { return randString(passwordChars, n) }
 
+var sampleMimeTypes = []string{
+	"application/octet-stream",
+	"application/vnd.ctc-posml",
+	"chemical/x-pdb",
+	"image/jpeg",
+	"text/h323",
+	"video/x-matroska",
+}
+
+func randMimeType() string {
+	return sampleMimeTypes[rand.IntN(len(sampleMimeTypes))]
+}
+
 func randBase64(n int) string {
 	b := make([]byte, n)
 	cheapRand.Read(b)
 	return base64.StdEncoding.EncodeToString(b)
 }
 
-func (h Handler) serveGitConfig(w http.ResponseWriter) {
+func (h *Handler) serveGitConfig(w http.ResponseWriter) {
 	fmt.Fprintf(w, "[user]\n\tname = %s\n\tpassword = %s\n",
 		randAlpha(4+rand.IntN(12)),
 		randAlpha(6+rand.IntN(40)))
@@ -133,7 +157,7 @@ func (h Handler) serveGitConfig(w http.ResponseWriter) {
 	}
 }
 
-func (h Handler) serveAtomFTPConfig(w http.ResponseWriter) {
+func (h *Handler) serveAtomFTPConfig(w http.ResponseWriter) {
 	fmt.Fprintf(w, `{
 	"protocol": "sftp",
 	"host": "%s",
@@ -144,7 +168,7 @@ func (h Handler) serveAtomFTPConfig(w http.ResponseWriter) {
 		randAlpha(4+rand.IntN(12)), randPassword(6+rand.IntN(30)))
 }
 
-func (h Handler) serveSublimeCodeSFTPConfig(w http.ResponseWriter) {
+func (h *Handler) serveSublimeCodeSFTPConfig(w http.ResponseWriter) {
 	fmt.Fprintf(w, `{
 	"type": "sftp",
 	"host": "%s",
@@ -155,7 +179,7 @@ func (h Handler) serveSublimeCodeSFTPConfig(w http.ResponseWriter) {
 		randAlpha(4+rand.IntN(12)), randPassword(6+rand.IntN(30)))
 }
 
-func (h Handler) serveVSCodeFTPSync(w http.ResponseWriter) {
+func (h *Handler) serveVSCodeFTPSync(w http.ResponseWriter) {
 	fmt.Fprintf(w, `{
 	"remotePath: "%s",
 	"host": "%s",
@@ -174,7 +198,7 @@ func (h Handler) serveVSCodeFTPSync(w http.ResponseWriter) {
 		randPassword(20+rand.IntN(40)))
 }
 
-func (h Handler) serveAWSCLICredentials(w http.ResponseWriter) {
+func (h *Handler) serveAWSCLICredentials(w http.ResponseWriter) {
 	name, sep := "default", ""
 	for i := 5 + rand.IntN(5); i > 0; i-- {
 		fmt.Fprintf(w, sep+`
@@ -189,7 +213,7 @@ aws_session_token=%s`, name, randUpperAlphaNumeric(19),
 	}
 }
 
-func (h Handler) serveNodeDotEnv(w http.ResponseWriter) {
+func (h *Handler) serveNodeDotEnv(w http.ResponseWriter) {
 	fmt.Fprintf(w, `PORT=%d
 API_KEY=%s
 DATABASE_URL=mysql://%s:%d/%s
@@ -216,7 +240,7 @@ AWS_SESSION_TOKEN=%s
 		randAlphaMixedCaseNumeric(60))
 }
 
-func (h Handler) servePHPIni(w http.ResponseWriter) {
+func (h *Handler) servePHPIni(w http.ResponseWriter) {
 	fmt.Fprintf(w, `[php]
 register_globals=on
 
@@ -242,6 +266,32 @@ default_password="%s"
 		randPassword(6+rand.IntN(10)))
 }
 
+func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
+	defer h.activeSlowResponses.Add(-1)
+	if h.activeSlowResponses.Add(1) > h.SlowResponseLimit {
+		return
+	}
+	w.Header().Set("Content-Type", randMimeType())
+
+	rc := http.NewResponseController(w)
+	deadline := time.Now().Add(h.SlowResponseDeadline)
+	rc.SetWriteDeadline(deadline)
+	for i, delay := 0, 0*time.Second; i < 100; i++ {
+		n := 1 + rand.IntN(16)
+		buf := make([]byte, n)
+		cheapRand.Read(buf)
+		w.Write(buf)
+		if err := rc.Flush(); err != nil {
+			break
+		}
+		delay += time.Duration(1+rand.IntN(1000)) * time.Millisecond
+		if time.Now().Add(delay).After(deadline) {
+			break
+		}
+		time.Sleep(delay)
+	}
+}
+
 var indexOrSimilar = regexp.MustCompile(`(?i)/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(
@@ -258,7 +308,7 @@ func supportsEncoding(r *http.Request, algo string) bool {
 	return false
 }
 
-func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("path=%s accept-encoding=%s", r.URL.Path, r.Header.Get("Accept-Encoding"))
 	switch {
 	// The two real URLs here
@@ -335,11 +385,17 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case supportsEncoding(r, "zstd"):
 		h.serveEncodedFile(w, "zstd", "text/plain", "content/1g.zstd")
 
+	case strings.Contains(r.URL.Path, "slow"):
+		h.serveSlowDribble(w)
+
 	default:
 		// serve nothing
 	}
 }
 
 func NewHandler() *Handler {
-	return &Handler{}
+	return &Handler{
+		SlowResponseLimit:    10,
+		SlowResponseDeadline: 29 * time.Second,
+	}
 }
