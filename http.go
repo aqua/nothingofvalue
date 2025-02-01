@@ -25,6 +25,8 @@ var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ12345
 //go:embed content/16384.webp content/225000x225000.png.gz
 //go:embed content/50000x50000.jpeg.gz
 //go:embed content/overlapping.zip content/zero.gz.gz
+//go:embed content/600d20000.json.gz content/600d20000.json.zstd
+//go:embed content/600d20000.json.br
 var content embed.FS
 
 type Handler struct {
@@ -308,6 +310,19 @@ func supportsEncoding(r *http.Request, algo string) bool {
 	return false
 }
 
+func (h *Handler) serveContentEncoded(w http.ResponseWriter, r *http.Request, mimeType, path string) {
+	switch {
+	case supportsEncoding(r, "br"):
+		h.serveEncodedFile(w, "br", mimeType, path+".br")
+	case supportsEncoding(r, "zstd"):
+		h.serveEncodedFile(w, "zstd", mimeType, path+".zstd")
+	case supportsEncoding(r, "gzip"):
+		h.serveEncodedFile(w, "gzip", mimeType, path+".gz")
+	default:
+		// serve an empty response
+	}
+}
+
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("path=%s accept-encoding=%s", r.URL.Path, r.Header.Get("Accept-Encoding"))
 	switch {
@@ -369,6 +384,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// (https://www.bamsoftware.com/hacks/zipbomb/).
 	case strings.HasSuffix(r.URL.Path, ".zip"):
 		h.serveFile(w, "application/zip", "content/overlapping.zip")
+
+	case strings.HasSuffix(r.URL.Path, ".json"):
+		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 
 	// gzip can only do 1024:1, but if the client will also transport encode,
 	// we can offer 1024^2:1.
