@@ -3,6 +3,7 @@ package nothingofvalue
 import (
 	"bufio"
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
@@ -49,7 +50,11 @@ func (h Handler) serveFile(w http.ResponseWriter, ct, fn string) {
 }
 
 var alphabet = []byte("abcdefghijklmnopqrstuvwyz")
+var upperAlphabet = []byte("ABCDEFGHIJKLMNOPQRSTUVWYZ")
 var alphanumerics = []byte("abcdefghijklmnopqrstuvwyz0123456789")
+var upperAlphaNumerics = []byte("ABCDEFGHIJKLMNOPQRSTUVWYZ0123456789")
+var alphaMixedCaseNumerics = []byte("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789")
+var passwordChars = []byte("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789;:,.<>/?!@#$$%^&*()~`[]{}|")
 
 func randTLD() string {
 	s := ""
@@ -75,11 +80,19 @@ func randTLD() string {
 	return ".coop"
 }
 
-func randHostname() string {
-	return randAlphaString(4+rand.IntN(30)) + randTLD()
+func randUNIXPath() string {
+	parts := make([]string, 2+rand.IntN(3))
+	for i := range parts {
+		parts[i] = randAlpha(4 + rand.IntN(8))
+	}
+	return "/" + strings.Join(parts, "/")
 }
 
-func randAlphaString(n int) string {
+func randHostname() string {
+	return randAlpha(4+rand.IntN(30)) + randTLD()
+}
+
+func randString(alphabet []byte, n int) string {
 	o := make([]byte, n)
 	for i := 0; i < n; i++ {
 		o[i] = alphabet[rand.IntN(len(alphabet))]
@@ -87,18 +100,23 @@ func randAlphaString(n int) string {
 	return string(o)
 }
 
-func randAlphaNumeric(n int) string {
-	o := make([]byte, n)
-	for i := 0; i < n; i++ {
-		o[i] = alphanumerics[rand.IntN(len(alphanumerics))]
-	}
-	return string(o)
+func randAlpha(n int) string                 { return randString(alphabet, n) }
+func randUpperAlpha(n int) string            { return randString(upperAlphabet, n) }
+func randAlphaNumeric(n int) string          { return randString(alphanumerics, n) }
+func randUpperAlphaNumeric(n int) string     { return randString(upperAlphaNumerics, n) }
+func randAlphaMixedCaseNumeric(n int) string { return randString(alphaMixedCaseNumerics, n) }
+func randPassword(n int) string              { return randString(passwordChars, n) }
+
+func randBase64(n int) string {
+	b := make([]byte, n)
+	cheapRand.Read(b)
+	return base64.StdEncoding.EncodeToString(b)
 }
 
 func (h Handler) serveGitConfig(w http.ResponseWriter) {
 	fmt.Fprintf(w, "[user]\n\tname = %s\n\tpassword = %s\n",
-		randAlphaString(4+rand.IntN(12)),
-		randAlphaString(6+rand.IntN(40)))
+		randAlpha(4+rand.IntN(12)),
+		randAlpha(6+rand.IntN(40)))
 	for i := 0; i < 10; i++ {
 		fmt.Fprintf(w,
 			"\n[credential ssh://%s@%s/%s]\n\tusername = %s\n"+
@@ -106,12 +124,69 @@ func (h Handler) serveGitConfig(w http.ResponseWriter) {
 			randAlphaNumeric(12),
 			randHostname(),
 			randAlphaNumeric(20),
-			randAlphaString(12),
+			randAlpha(12),
 			randAlphaNumeric(12))
 	}
 }
 
+func (h Handler) serveAtomFTPConfig(w http.ResponseWriter) {
+	fmt.Fprintf(w, `{
+	"protocol": "sftp",
+	"host": "%s",
+	"port": %d,
+	"user": "%s",
+	"pass": "%s"
+}`, randHostname(), 20+rand.IntN(50000),
+		randAlpha(4+rand.IntN(12)), randPassword(6+rand.IntN(30)))
+}
+
+func (h Handler) serveSublimeCodeSFTPConfig(w http.ResponseWriter) {
+	fmt.Fprintf(w, `{
+	"type": "sftp",
+	"host": "%s",
+	"port": "%d",
+	"user": "%s",
+	"password": "%s",
+}`, randHostname(), 20+rand.IntN(50000),
+		randAlpha(4+rand.IntN(12)), randPassword(6+rand.IntN(30)))
+}
+
+func (h Handler) serveVSCodeFTPSync(w http.ResponseWriter) {
+	fmt.Fprintf(w, `{
+	"remotePath: "%s",
+	"host": "%s",
+	"username": "%s",
+	"password": "%s",
+	"port": "%d",
+	"secure": true,
+	"protocol": "sftp",
+	"privateKeyPath": "%s",
+	"passphrase": "%s",
+	"ignore": ["\\.vscode","\\.git"]
+}`,
+		randUNIXPath(), randHostname(), randAlpha(4+rand.IntN(10)),
+		randPassword(6+rand.IntN(30)),
+		20+rand.IntN(50000), randUNIXPath(),
+		randPassword(20+rand.IntN(40)))
+}
+
+func (h Handler) serveAWSCLICredentials(w http.ResponseWriter) {
+	name, sep := "default", ""
+	for i := 5 + rand.IntN(5); i > 0; i-- {
+		fmt.Fprintf(w, sep+`
+[%s]
+aws_access_key_id=A%s
+aws_secret_access_key=%s
+aws_session_token=%s`, name, randUpperAlphaNumeric(19),
+			randBase64(20),
+			randAlphaMixedCaseNumeric(60))
+		name = randAlpha(4 + rand.IntN(10))
+		sep = "\n"
+	}
+}
+
 var indexOrSimilar = regexp.MustCompile(`(?i)/+(index(\.\w+)?)?$`)
+var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.yaml$`)
 
 func supportsEncoding(r *http.Request, algo string) bool {
@@ -152,6 +227,16 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Secondhand git credentials, surely valuable to someone
 	case strings.HasSuffix(r.URL.Path, "/.git/config"):
 		h.serveGitConfig(w)
+	case strings.HasSuffix(r.URL.Path, "ftp-sync.json"):
+		h.serveVSCodeFTPSync(w)
+	case strings.HasSuffix(r.URL.Path, "sftp-config.json"):
+		h.serveSublimeCodeSFTPConfig(w)
+	case strings.HasSuffix(r.URL.Path, ".ftpconfig"):
+		h.serveAtomFTPConfig(w)
+	case strings.HasSuffix(r.URL.Path, ".ftpconfig"):
+		h.serveAtomFTPConfig(w)
+	case awsCredentialPath.MatchString(r.URL.Path):
+		h.serveAWSCLICredentials(w)
 
 	// While PNG, much like gzip, has a maximum compression ratio of about
 	// 1024:1, it re-compresses very well.  Thanks to David Fifield
