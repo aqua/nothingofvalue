@@ -92,6 +92,10 @@ func randHostname() string {
 	return randAlpha(4+rand.IntN(30)) + randTLD()
 }
 
+func randPort() int {
+	return 20 + rand.IntN(50000)
+}
+
 func randString(alphabet []byte, n int) string {
 	o := make([]byte, n)
 	for i := 0; i < n; i++ {
@@ -185,9 +189,65 @@ aws_session_token=%s`, name, randUpperAlphaNumeric(19),
 	}
 }
 
+func (h Handler) serveNodeDotEnv(w http.ResponseWriter) {
+	fmt.Fprintf(w, `PORT=%d
+API_KEY=%s
+DATABASE_URL=mysql://%s:%d/%s
+MYSQL_HOST=%s
+MYSQL_USER=root
+MYSQL_PASSWORD=%s
+MYSQL_DATABASE=%s
+S3BUCKET="%s"
+SECRET_KEY="%s"
+AWS_ACCESS_KEY_ID=A%s
+AWS_SECRET_ACCESS_KEY=%s
+AWS_SESSION_TOKEN=%s
+`,
+		randPort(),
+		randAlphaMixedCaseNumeric(20),
+		randHostname(), randPort(), randAlpha(4+rand.IntN(20)),
+		randHostname(),
+		randAlphaMixedCaseNumeric(6+rand.IntN(20)),
+		randAlpha(4+rand.IntN(10)),
+		randAlphaMixedCaseNumeric(40),
+		randAlphaMixedCaseNumeric(30),
+		randUpperAlphaNumeric(19),
+		randBase64(20),
+		randAlphaMixedCaseNumeric(60))
+}
+
+func (h Handler) servePHPIni(w http.ResponseWriter) {
+	fmt.Fprintf(w, `[php]
+register_globals=on
+
+[mail function]
+SMTP=%s
+smtp_port=%d
+username=%s
+password="%s"
+sendmail_from=%s
+
+[mysql]
+default_host=%s
+default_port=%d
+default_user=%s
+default_password="%s"
+`, randHostname(), randPort(),
+		randAlpha(4+rand.IntN(10)),
+		randPassword(6+rand.IntN(10)),
+		randHostname(),
+		randHostname(),
+		randPort(),
+		randAlpha(4+rand.IntN(10)),
+		randPassword(6+rand.IntN(10)))
+}
+
 var indexOrSimilar = regexp.MustCompile(`(?i)/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
-var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.yaml$`)
+var nodeDotEnvPath = regexp.MustCompile(
+	`(?i).*/\.env(.bac?k(up)?|.old|.save|.dev(el(opment)?)?|.prod(uction)?)?$`)
+var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.yaml(.bac?k(up)?)?$`)
+var phpIniPath = regexp.MustCompile(`(?i).*/php.ini(.bac?k(up?))?$`)
 
 func supportsEncoding(r *http.Request, algo string) bool {
 	for _, a := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
@@ -237,6 +297,10 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveAtomFTPConfig(w)
 	case awsCredentialPath.MatchString(r.URL.Path):
 		h.serveAWSCLICredentials(w)
+	case nodeDotEnvPath.MatchString(r.URL.Path):
+		h.serveNodeDotEnv(w)
+	case phpIniPath.MatchString(r.URL.Path):
+		h.servePHPIni(w)
 
 	// While PNG, much like gzip, has a maximum compression ratio of about
 	// 1024:1, it re-compresses very well.  Thanks to David Fifield
