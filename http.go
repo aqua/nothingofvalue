@@ -220,7 +220,7 @@ func (h Handler) servePHPIni(w http.ResponseWriter) {
 	fmt.Fprintf(w, `[php]
 register_globals=on
 
-[mail function]
+[mail]
 SMTP=%s
 smtp_port=%d
 username=%s
