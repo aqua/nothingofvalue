@@ -298,7 +298,7 @@ var indexOrSimilar = regexp.MustCompile(`(?i)/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(
 	`(?i).*/\.env(.bac?k(up)?|.old|.save|.dev(el(opment)?)?|.prod(uction)?)?$`)
-var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.yaml(.bac?k(up)?)?$`)
+var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var phpIniPath = regexp.MustCompile(`(?i).*/php.ini(.bac?k(up?))?$`)
 
 func supportsEncoding(r *http.Request, algo string) bool {
