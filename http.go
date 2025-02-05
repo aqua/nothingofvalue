@@ -437,6 +437,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	case strings.HasSuffix(r.URL.Path, ".json"):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
+	case strings.HasSuffix(r.URL.Path, "/_catalog"):
+		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
+
+	case strings.HasSuffix(r.URL.Path, ".xml"):
+		h.serveFile(w, "text/xml", "content/wlwmanifest.xml")
 
 	// gzip can only do 1024:1, but if the client will also transport encode,
 	// we can offer 1024^2:1.
