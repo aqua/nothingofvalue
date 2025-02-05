@@ -42,6 +42,7 @@ type Handler struct {
 }
 
 func (h *Handler) serveEncodedFile(w http.ResponseWriter, enc, ct, fn string) {
+	log.Printf("serving %s encoded with %s", fn, enc)
 	f, err := content.Open(fn)
 	if err != nil {
 		log.Printf("missing embedded file %s: %v", fn, err)
@@ -81,16 +82,18 @@ func randTLD() string {
 		return ".biz"
 	}
 	for s == "" {
-		f.(io.Seeker).Seek(rand.Int64N(st.Size()), 0)
+		if _, err := f.(io.Seeker).Seek(rand.Int64N(st.Size()), 0); err != nil {
+			return ".coop"
+		}
 		sc := bufio.NewScanner(f)
 		sc.Scan()
 		sc.Scan()
-		w := sc.Text()
-		if w != "" {
-			return w
+		if err := sc.Err(); err != nil && err != io.EOF {
+			return ".download"
 		}
+		s = sc.Text()
 	}
-	return ".coop"
+	return s
 }
 
 func randUNIXPath() string {
@@ -271,9 +274,11 @@ default_password="%s"
 func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 	defer h.activeSlowResponses.Add(-1)
 	if h.activeSlowResponses.Add(1) > h.SlowResponseLimit {
+		log.Printf("too many slow requests in flight, returning fast nothing")
 		return
 	}
 	w.Header().Set("Content-Type", randMimeType())
+	log.Printf("serving slow gibberish as %s", w.Header().Get("Content-Type"))
 
 	rc := http.NewResponseController(w)
 	deadline := time.Now().Add(h.SlowResponseDeadline)
@@ -292,6 +297,50 @@ func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 		}
 		time.Sleep(delay)
 	}
+}
+
+var http400Codes = []int{
+	http.StatusBadRequest,
+	http.StatusUnauthorized,
+	http.StatusPaymentRequired,
+	http.StatusForbidden,
+	http.StatusNotFound,
+	http.StatusMethodNotAllowed,
+	http.StatusNotAcceptable,
+	http.StatusProxyAuthRequired,
+	http.StatusRequestTimeout,
+	http.StatusConflict,
+	http.StatusGone,
+	http.StatusLengthRequired,
+	http.StatusPreconditionFailed,
+	http.StatusRequestEntityTooLarge,
+	http.StatusRequestURITooLong,
+	http.StatusUnsupportedMediaType,
+	http.StatusRequestedRangeNotSatisfiable,
+	http.StatusExpectationFailed,
+	http.StatusTeapot,
+	http.StatusMisdirectedRequest,
+	http.StatusUnprocessableEntity,
+	http.StatusLocked,
+	http.StatusFailedDependency,
+	http.StatusTooEarly,
+	http.StatusUpgradeRequired,
+	http.StatusPreconditionRequired,
+	http.StatusTooManyRequests,
+	http.StatusRequestHeaderFieldsTooLarge,
+	http.StatusUnavailableForLegalReasons,
+}
+
+func (h *Handler) serveZeroPage(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", randMimeType())
+	log.Printf("serving a zero-page as %s", w.Header().Get("Content-Type"))
+	z := make([]byte, 4096)
+	w.Write(z)
+}
+
+func (h *Handler) serveRandom400(w http.ResponseWriter) {
+	log.Printf("serving random HTTP 400 code")
+	http.Error(w, "", http400Codes[rand.IntN(len(http400Codes))])
 }
 
 var indexOrSimilar = regexp.MustCompile(`(?i)/+(index(\.\w+)?)?$`)
@@ -324,7 +373,8 @@ func (h *Handler) serveContentEncoded(w http.ResponseWriter, r *http.Request, mi
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("path=%s accept-encoding=%s", r.URL.Path, r.Header.Get("Accept-Encoding"))
+	log.Printf("path=%s proto=%s accept-encoding=%s", r.URL.Path, r.Proto, r.Header.Get("Accept-Encoding"))
+	d100 := rand.IntN(100)
 	switch {
 	// The two real URLs here
 	case r.URL.Path == "/robots.txt":
@@ -352,7 +402,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Secondhand git credentials, surely valuable to someone
 	case strings.HasSuffix(r.URL.Path, "/.git/config"):
 		h.serveGitConfig(w)
-	case strings.HasSuffix(r.URL.Path, "ftp-sync.json"):
+	case strings.HasSuffix(r.URL.Path, "ftp-sync.json") || strings.HasSuffix(r.URL.Path, "/sftp.json"):
 		h.serveVSCodeFTPSync(w)
 	case strings.HasSuffix(r.URL.Path, "sftp-config.json"):
 		h.serveSublimeCodeSFTPConfig(w)
@@ -403,10 +453,16 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case supportsEncoding(r, "zstd"):
 		h.serveEncodedFile(w, "zstd", "text/plain", "content/1g.zstd")
 
-	case strings.Contains(r.URL.Path, "slow"):
+	// Beyond this point we have no specific way to be unhelpful and just pick
+	// randomly from a selection of unhelpful things.
+	case d100 < 50:
 		h.serveSlowDribble(w)
-
+	case d100 < 70:
+		h.serveRandom400(w)
+	case d100 < 90:
+		h.serveZeroPage(w)
 	default:
+		log.Printf("serving nothing")
 		// serve nothing
 	}
 }
