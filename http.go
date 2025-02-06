@@ -17,7 +17,9 @@ import (
 
 var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")))
 
-//go:embed content/robots.txt content/index.html
+//go:embed content/robots.txt
+//go:embed content/index.html content/index.html.gz
+//go:embed content/index.html.br content/index.html.zstd
 //go:embed content/muchyaml.yaml content/wlwmanifest.xml
 //go:embed content/1g.br content/10g.br content/100g.br
 //go:embed content/1g.zstd content/10g.zstd
@@ -42,7 +44,7 @@ type Handler struct {
 }
 
 func (h *Handler) serveEncodedFile(w http.ResponseWriter, enc, ct, fn string) {
-	log.Printf("serving %s encoded with %s", fn, enc)
+	log.Printf("serving %s encoded with %q", fn, enc)
 	f, err := content.Open(fn)
 	if err != nil {
 		log.Printf("missing embedded file %s: %v", fn, err)
@@ -361,6 +363,10 @@ func supportsEncoding(r *http.Request, algo string) bool {
 }
 
 func (h *Handler) serveContentEncoded(w http.ResponseWriter, r *http.Request, mimeType, path string) {
+	h.serveContentEncodedFallback(w, r, mimeType, path, "")
+}
+
+func (h *Handler) serveContentEncodedFallback(w http.ResponseWriter, r *http.Request, mimeType, path, fallback string) {
 	switch {
 	case supportsEncoding(r, "br"):
 		h.serveEncodedFile(w, "br", mimeType, path+".br")
@@ -368,6 +374,8 @@ func (h *Handler) serveContentEncoded(w http.ResponseWriter, r *http.Request, mi
 		h.serveEncodedFile(w, "zstd", mimeType, path+".zstd")
 	case supportsEncoding(r, "gzip"):
 		h.serveEncodedFile(w, "gzip", mimeType, path+".gz")
+	case fallback != "":
+		h.serveFile(w, mimeType, fallback)
 	default:
 		// serve an empty response
 	}
@@ -381,7 +389,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.URL.Path == "/robots.txt":
 		h.serveFile(w, "text/plain", "content/robots.txt")
 	case indexOrSimilar.MatchString(r.URL.Path):
-		h.serveFile(w, "text/html", "content/index.html")
+		h.serveContentEncodedFallback(w, r, "text/html", "content/index.html", "content/index.html")
 
 	// Requests here generally mean no harm and dig no deeper.
 	case strings.HasPrefix(r.URL.Path, "/.well-known"):
