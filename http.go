@@ -21,7 +21,6 @@ func setHSTS(w http.ResponseWriter) {
 	w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
 }
 
-//go:embed content/robots.txt
 //go:embed content/index.html content/index.html.gz
 //go:embed content/index.html.br content/index.html.zstd
 //go:embed content/muchyaml.yaml content/wlwmanifest.xml
@@ -45,6 +44,30 @@ type Handler struct {
 
 	// How long to spend issuing a slow response.
 	SlowResponseDeadline time.Duration
+}
+
+// serve a (correct, harmless) sitemap
+func (h *Handler) serveSitemap(w http.ResponseWriter, r *http.Request) {
+	setHSTS(w)
+	w.Header().Set("Content-Type", "text/xml")
+	fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://%s/index.html</loc>
+    <lastmod>2025-01-01</lastmod>
+  </url>
+</urlset>`, r.Host)
+}
+
+func (h *Handler) serveRobotsTxt(w http.ResponseWriter, r *http.Request) {
+	setHSTS(w)
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(w, `User-Agent: *
+Disallow: /
+Allow: /index.html
+
+Sitemap: https://%s/sitemap.xml
+`, r.Host)
 }
 
 func (h *Handler) serveEncodedFile(w http.ResponseWriter, enc, ct, fn string) {
@@ -396,7 +419,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	// The two real URLs here
 	case r.URL.Path == "/robots.txt":
-		h.serveFile(w, "text/plain", "content/robots.txt")
+		h.serveRobotsTxt(w, r)
+	case r.URL.Path == "/sitemap.xml":
+		h.serveSitemap(w, r)
 	case indexOrSimilar.MatchString(r.URL.Path):
 		h.serveContentEncodedFallback(w, r, "text/html", "content/index.html", "content/index.html")
 
