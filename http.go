@@ -17,6 +17,10 @@ import (
 
 var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")))
 
+func setHSTS(w http.ResponseWriter) {
+	w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+}
+
 //go:embed content/robots.txt
 //go:embed content/index.html content/index.html.gz
 //go:embed content/index.html.br content/index.html.zstd
@@ -58,6 +62,7 @@ func (h *Handler) serveEncodedFile(w http.ResponseWriter, enc, ct, fn string) {
 	if enc != "" {
 		w.Header().Set("Content-Encoding", enc)
 	}
+	setHSTS(w)
 	io.Copy(w, f)
 }
 
@@ -149,6 +154,7 @@ func randBase64(n int) string {
 }
 
 func (h *Handler) serveGitConfig(w http.ResponseWriter) {
+	setHSTS(w)
 	fmt.Fprintf(w, "[user]\n\tname = %s\n\tpassword = %s\n",
 		randAlpha(4+rand.IntN(12)),
 		randAlpha(6+rand.IntN(40)))
@@ -280,6 +286,7 @@ func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 		return
 	}
 	w.Header().Set("Content-Type", randMimeType())
+	setHSTS(w)
 	log.Printf("serving slow gibberish as %s", w.Header().Get("Content-Type"))
 
 	rc := http.NewResponseController(w)
@@ -334,6 +341,7 @@ var http400Codes = []int{
 }
 
 func (h *Handler) serveZeroPage(w http.ResponseWriter) {
+	setHSTS(w)
 	w.Header().Set("Content-Type", randMimeType())
 	log.Printf("serving a zero-page as %s", w.Header().Get("Content-Type"))
 	z := make([]byte, 4096)
@@ -342,6 +350,7 @@ func (h *Handler) serveZeroPage(w http.ResponseWriter) {
 
 func (h *Handler) serveRandom400(w http.ResponseWriter) {
 	log.Printf("serving random HTTP 400 code")
+	setHSTS(w)
 	http.Error(w, "", http400Codes[rand.IntN(len(http400Codes))])
 }
 
