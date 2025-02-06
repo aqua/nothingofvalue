@@ -349,6 +349,7 @@ var nodeDotEnvPath = regexp.MustCompile(
 	`(?i).*/\.env(.bac?k(up)?|.old|.save|.dev(el(opment)?)?|.prod(uction)?)?$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var phpIniPath = regexp.MustCompile(`(?i).*/php.ini(.bac?k(up?))?$`)
+var springActuatorPath = regexp.MustCompile(`(?i).*/actuator/\w+$`)
 
 func supportsEncoding(r *http.Request, algo string) bool {
 	for _, a := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
@@ -437,7 +438,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	case strings.HasSuffix(r.URL.Path, ".json"):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
-	case strings.HasSuffix(r.URL.Path, "/_catalog"):
+	case (strings.HasSuffix(r.URL.Path, "/_catalog") ||
+		springActuatorPath.MatchString(r.URL.Path) ||
+		strings.Contains(r.URL.Path, "/wp-json/")):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 
 	case strings.HasSuffix(r.URL.Path, ".xml"):
