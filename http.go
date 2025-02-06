@@ -343,7 +343,7 @@ func (h *Handler) serveRandom400(w http.ResponseWriter) {
 	http.Error(w, "", http400Codes[rand.IntN(len(http400Codes))])
 }
 
-var indexOrSimilar = regexp.MustCompile(`(?i)/+(index(\.\w+)?)?$`)
+var indexOrSimilar = regexp.MustCompile(`(?i)^/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(
 	`(?i).*/\.env(.bac?k(up)?|.old|.save|.dev(el(opment)?)?|.prod(uction)?)?$`)
