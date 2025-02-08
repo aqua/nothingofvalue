@@ -10,6 +10,7 @@ import (
 	rand "math/rand/v2"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -174,6 +175,38 @@ func randBase64(n int) string {
 	b := make([]byte, n)
 	cheapRand.Read(b)
 	return base64.StdEncoding.EncodeToString(b)
+}
+
+// Cheap-to-serve but moderately weird HEAD response.
+//
+// Under HTTP2, header compression potentially gives us options for a mild
+// decompression-bomb approach, but we're not because (a) the HPACK header
+// dictionary has only a modest number of server response header entries, (b)
+// there's a 1-byte/header best-case cost which isn't much of an expansion
+// ratio, (c) a more sophisticated client isn't going to actually expand to
+// the textual form of a well-known header, and (d) very few hostile crawlers
+// support HTTP2 anyway.
+//
+// Also, in a cloud context, the response header is likely to be parsed by a
+// transparent proxy, and Go's HTTP server uses a local hash for headers, so
+// we're only trying to behave strangely and not actually be hostile.  The
+// headers used all have HPACK dictionary entries to make them cheaper to
+// ship where possible.
+func (h *Handler) serveUnhelpfulHead(w http.ResponseWriter, r *http.Request) {
+	setHSTS(w)
+	w.Header().Set("Content-Type", randMimeType())
+	w.Header().Set("Content-Length", strconv.Itoa(rand.IntN(0xfffffffff)))
+	w.Header().Set("Retry-After", strconv.Itoa(1+rand.IntN(0xffff)))
+	modtime := time.Unix(rand.Int64N(0xffffffff), 0)
+	w.Header().Set("Last-Modified", modtime.UTC().Format(http.TimeFormat))
+	w.Header().Set("Vary", "*")
+	w.Header().Set("Expires", time.Now().Add(1024*time.Hour).Format(http.TimeFormat))
+	for i := 0; i < 10; i++ {
+		w.Header().Add("Link",
+			fmt.Sprintf("<https://%s/link/%s>; rel=\"%s\"",
+				r.Host, randAlpha(4+rand.IntN(8)), randAlpha(2+rand.IntN(10))))
+	}
+
 }
 
 func (h *Handler) serveGitConfig(w http.ResponseWriter) {
@@ -432,6 +465,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusNotFound)
 	case strings.HasPrefix(r.URL.Path, "/favicon"):
 		http.Error(w, "", http.StatusNotFound)
+
+	// Bulk HEAD requests tend
+	case r.Method == "HEAD":
+		h.serveUnhelpfulHead(w, r)
 
 	// Beyond this point, though, all is malign.
 
