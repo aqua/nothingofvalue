@@ -9,9 +9,11 @@ import (
 	"log"
 	rand "math/rand/v2"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -158,6 +160,8 @@ func randUpperAlphaNumeric(n int) string     { return randString(upperAlphaNumer
 func randAlphaMixedCaseNumeric(n int) string { return randString(alphaMixedCaseNumerics, n) }
 func randPassword(n int) string              { return randString(passwordChars, n) }
 
+var mimeLoading sync.Once
+var osMimeTypes []string
 var sampleMimeTypes = []string{
 	"application/octet-stream",
 	"application/vnd.ctc-posml",
@@ -168,6 +172,9 @@ var sampleMimeTypes = []string{
 }
 
 func randMimeType() string {
+	if len(osMimeTypes) != 0 {
+		return osMimeTypes[rand.IntN(len(osMimeTypes))]
+	}
 	return sampleMimeTypes[rand.IntN(len(sampleMimeTypes))]
 }
 
@@ -555,8 +562,33 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewHandler() *Handler {
+	mimeLoading.Do(func() {
+		osMimeTypes, _ = loadMimeFile("/etc/mime.types")
+	})
 	return &Handler{
 		SlowResponseLimit:    10,
 		SlowResponseDeadline: 29 * time.Second,
 	}
+}
+
+func loadMimeFile(filename string) ([]string, error) {
+	types := make([]string, 0, 2000)
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) <= 1 || fields[0][0] == '#' {
+			continue
+		}
+		types = append(types, fields[0])
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return types, nil
 }
