@@ -21,9 +21,28 @@ Notable valueless offerings include decompression bombs for common image
 codecs and transport encodings, exponentially self-expanding markup language
 documents, made-up credentials, and similar.
 
-
 Usage: 
 
 ```
   go run main/main.go --listen=localhost:8080
 ```
+
+Demo:
+
+*  [Harmless homepage](https://sev2.com/)
+*  [robots.txt](https://sev2.com/robots.txt)
+*  [.git/config](https://sev2.com/foo/.git/config)
+*  [VSCode STFP config](https://sev2.com/bar/ftp-sync.json)
+*  [AWS Credentials](https://sev2.com/baz/.AWS/credentials)
+*  [Node .env](https://sev2.com/something/.env)
+*  [PHP .ini](https://sev2.com/something/php.ini)
+*  [Random path of no meaning](https://sev2.com/something/unrecognized)
+*  [Arbitrary JSON](https://sev2.com/arbitrary.json)
+*  More-hostile requests you can make; your actual results will vary
+   depending on your browser's supported transport encodings:
+   *  .zip
+   *  .webp
+   *  .png
+   *  .jpeg
+   *  .yaml
+   *  wlwmanifest.xml
