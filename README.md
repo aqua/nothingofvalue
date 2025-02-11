@@ -3,11 +3,13 @@
 Nothing of value is here.
 
 A self-contained webserver which strives to be of as little use as possible,
-as a musing on the modern zombie internet.
+as a musing on the modern zombie internet, where any webserver sees a constant
+background noise of malicious traffic punctuated by aggressive scrapers.
 
 Serves a single homepage of no great value, a /robots.txt forbidding all
-robotic crawls, and on all other possible URLs serves content of the least
-productive value possible, while keeping locally-consumed resources modest.
+robotic crawls other than that homepage, and on all other possible URLs serves
+content of the least productive value possible, while keeping locally-consumed
+resources modest.
 
 Not an infinitely-recursrive content tarpit (I wrote
 [one of those](https://devin.com/sugarplum/) too for spambots many years ago if
