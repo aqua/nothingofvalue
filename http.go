@@ -316,6 +316,18 @@ AWS_SESSION_TOKEN=%s
 		randAlphaMixedCaseNumeric(60))
 }
 
+func (h *Handler) serveNodeFTPConfig(w http.ResponseWriter) {
+	fmt.Fprintf(w, `{
+	 "host": "%s",
+	 "port": %d,
+	 "remote": "%s",
+	 "user": "%s",
+	 "pass": "%s"
+}`, randHostname(), randPort(), randUNIXPath(),
+		randAlpha(4+rand.IntN(10)),
+		randAlphaMixedCaseNumeric(40))
+}
+
 func (h *Handler) servePHPIni(w http.ResponseWriter) {
 	fmt.Fprintf(w, `[php]
 register_globals=on
@@ -493,6 +505,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveVSCodeFTPSync(w)
 	case strings.HasSuffix(r.URL.Path, "sftp-config.json"):
 		h.serveSublimeCodeSFTPConfig(w)
+	case strings.HasSuffix(r.URL.Path, "ftp-config.json"):
+		h.serveNodeFTPConfig(w)
 	case strings.HasSuffix(r.URL.Path, ".ftpconfig"):
 		h.serveAtomFTPConfig(w)
 	case strings.HasSuffix(r.URL.Path, ".ftpconfig"):
