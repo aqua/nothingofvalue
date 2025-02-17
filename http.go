@@ -244,6 +244,11 @@ func (h *Handler) serveAtomFTPConfig(w http.ResponseWriter) {
 		randAlpha(4+rand.IntN(12)), randPassword(6+rand.IntN(30)))
 }
 
+func (h *Handler) serveSendgridConfig(w http.ResponseWriter) {
+	fmt.Fprintf(w, "SENDGRID_API_KEY=SG.%s.%s",
+		randAlphaMixedCaseNumeric(22), randAlphaMixedCaseNumeric(43))
+}
+
 func (h *Handler) serveSublimeCodeSFTPConfig(w http.ResponseWriter) {
 	fmt.Fprintf(w, `{
 	"type": "sftp",
@@ -434,7 +439,7 @@ var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(
 	`(?i).*/\.env(.bac?k(up)?|.old|.save|.dev(el(opment)?)?|.prod(uction)?)?$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
-var phpIniPath = regexp.MustCompile(`(?i).*/php.ini(.bac?k(up?))?$`)
+var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
 var springActuatorPath = regexp.MustCompile(`(?i).*/actuator/\w+$`)
 
 func supportsEncoding(r *http.Request, algo string) bool {
@@ -509,8 +514,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveNodeFTPConfig(w)
 	case strings.HasSuffix(r.URL.Path, ".ftpconfig"):
 		h.serveAtomFTPConfig(w)
-	case strings.HasSuffix(r.URL.Path, ".ftpconfig"):
-		h.serveAtomFTPConfig(w)
+	case strings.HasSuffix(r.URL.Path, "sendgrid.env"):
+		h.serveSendgridConfig(w)
 	case awsCredentialPath.MatchString(r.URL.Path):
 		h.serveAWSCLICredentials(w)
 	case nodeDotEnvPath.MatchString(r.URL.Path):
