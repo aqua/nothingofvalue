@@ -26,7 +26,7 @@ func setHSTS(w http.ResponseWriter) {
 
 //go:embed content/index.html content/index.html.gz
 //go:embed content/index.html.br content/index.html.zstd
-//go:embed content/muchyaml.yaml content/wlwmanifest.xml
+//go:embed content/muchyaml.yaml content/xmlrpc.xml content/wlwmanifest.xml
 //go:embed content/1g.br content/10g.br content/100g.br
 //go:embed content/1g.zstd content/10g.zstd
 //go:embed content/tlds.txt
@@ -548,6 +548,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		strings.Contains(r.URL.Path, "/wp-json/")):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 
+	case strings.Contains(r.URL.Path, "xmlrpc.php"):
+		h.serveFile(w, "text/xml", "content/xmlrpc.xml")
 	case strings.HasSuffix(r.URL.Path, ".xml"):
 		h.serveFile(w, "text/xml", "content/wlwmanifest.xml")
 

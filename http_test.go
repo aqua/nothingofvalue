@@ -33,6 +33,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/sitemap.xml", 200, re("<loc>.*</loc>")},
 		{"/favicon.ico", 404, nil},
 		{"/wlwmanifest.xml", 200, re("<?xml")},
+		{"/xmlrpc.php", 200, re("<?xml")},
 		{"/.git/config", 200, re(`\[credential `)},
 		{"/.ftp-sync.json", 200, re(`remotePath: *".*"`)},
 		{"/sftp-config.json", 200, re(`"user": *"`)},
