@@ -42,6 +42,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/.aws/credentials", 200, re(`aws_access_key_id=A`)},
 		{"/.env", 200, re(`API_KEY=.+`)},
 		{"/php.ini", 200, re(`default_user=.+`)},
+		{"/phpinfo.php", 200, re(`href="https?://www.php.net/`)},
 		{"/sendgrid.env", 200, re(`SENDGRID_API_KEY=SG\..+`)},
 	}
 	h := NewHandler()

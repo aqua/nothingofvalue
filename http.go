@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"text/template"
 	"time"
 )
 
@@ -35,6 +36,7 @@ func setHSTS(w http.ResponseWriter) {
 //go:embed content/overlapping.zip content/zero.gz.gz
 //go:embed content/600d20000.json.gz content/600d20000.json.zstd
 //go:embed content/600d20000.json.br
+//go:embed content/phpinfo.html
 var content embed.FS
 
 type Handler struct {
@@ -47,6 +49,9 @@ type Handler struct {
 
 	// How long to spend issuing a slow response.
 	SlowResponseDeadline time.Duration
+
+	templateInsert sync.Mutex
+	templates      sync.Map
 }
 
 // serve a (correct, harmless) sitemap
@@ -101,7 +106,8 @@ var upperAlphabet = []byte("ABCDEFGHIJKLMNOPQRSTUVWYZ")
 var alphanumerics = []byte("abcdefghijklmnopqrstuvwyz0123456789")
 var upperAlphaNumerics = []byte("ABCDEFGHIJKLMNOPQRSTUVWYZ0123456789")
 var alphaMixedCaseNumerics = []byte("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789")
-var passwordChars = []byte("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789;:,.<>/?!@#$$%^&*()~`[]{}|")
+var passwordChars = []byte("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789;:,./?!@#$%^*()~`[]{}|")
+var upperHex = []byte("0123456789ABCDEF")
 
 func randTLD() string {
 	s := ""
@@ -141,6 +147,11 @@ func randHostname() string {
 	return randAlpha(4+rand.IntN(30)) + randTLD()
 }
 
+func randIP() string {
+	return fmt.Sprintf("%d.%d.%d.%d",
+		rand.IntN(255), rand.IntN(255), rand.IntN(255), rand.IntN(255))
+}
+
 func randPort() int {
 	return 20 + rand.IntN(50000)
 }
@@ -158,6 +169,7 @@ func randUpperAlpha(n int) string            { return randString(upperAlphabet, 
 func randAlphaNumeric(n int) string          { return randString(alphanumerics, n) }
 func randUpperAlphaNumeric(n int) string     { return randString(upperAlphaNumerics, n) }
 func randAlphaMixedCaseNumeric(n int) string { return randString(alphaMixedCaseNumerics, n) }
+func randUpperHex(n int) string              { return randString(upperHex, n) }
 func randPassword(n int) string              { return randString(passwordChars, n) }
 
 var mimeLoading sync.Once
@@ -359,6 +371,58 @@ default_password="%s"
 		randPassword(6+rand.IntN(10)))
 }
 
+type phpInfoData struct {
+}
+
+func (i phpInfoData) Hex(n int) string          { return randUpperHex(n) }
+func (i phpInfoData) Int(n int) int             { return rand.IntN(n) }
+func (i phpInfoData) IntR(min, max int) int     { return min + rand.IntN(max-min) }
+func (i phpInfoData) Alpha(min, max int) string { return randAlpha(min + (max - min)) }
+func (i phpInfoData) Password(n int) string     { return randPassword(n) }
+func (i phpInfoData) Hostname() string          { return randHostname() }
+func (i phpInfoData) IP() string                { return randIP() }
+func (i phpInfoData) UNIXPath() string          { return randUNIXPath() }
+
+func (i phpInfoData) AutoconfCommand() string {
+	cmd := []string{"./configure"}
+	for i := 10 + rand.IntN(40); i > 0; i-- {
+		thing := randAlpha(2 + rand.IntN(20))
+		with := "--with"
+		if rand.IntN(2) == 0 {
+			with = "--without"
+		} else if rand.IntN(4) == 0 {
+			with = with + "=" + randUNIXPath()
+		}
+		cmd = append(cmd, with+"-"+thing)
+	}
+	for i, v := range cmd {
+		cmd[i] = "'" + v + "'"
+	}
+	return strings.Join(cmd, " ")
+}
+
+func (h *Handler) servePHPInfo(w http.ResponseWriter) {
+	var tmpl *template.Template
+	var err error
+	t, ok := h.templates.Load("phpinfo.html")
+	if ok {
+		tmpl = t.(*template.Template)
+	} else {
+		h.templateInsert.Lock()
+		defer h.templateInsert.Unlock()
+		tmpl, err = template.New("phpinfo.html").ParseFS(content, "content/phpinfo.html")
+		if err != nil {
+			log.Printf("Error parsing template phpinfo.html: %v", err)
+			// return blank HTTP response
+			return
+		}
+		h.templates.Store("phpinfo.html", tmpl)
+	}
+	if err = tmpl.Execute(w, &phpInfoData{}); err != nil {
+		log.Printf("Error executing template phpinfo.html: %v", err)
+	}
+}
+
 func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 	defer h.activeSlowResponses.Add(-1)
 	if h.activeSlowResponses.Add(1) > h.SlowResponseLimit {
@@ -440,6 +504,7 @@ var nodeDotEnvPath = regexp.MustCompile(
 	`(?i).*/\.env(.bac?k(up)?|.old|.save|.dev(el(opment)?)?|.prod(uction)?)?$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
+var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$`)
 var springActuatorPath = regexp.MustCompile(`(?i).*/actuator/\w+$`)
 
 func supportsEncoding(r *http.Request, algo string) bool {
@@ -522,6 +587,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveNodeDotEnv(w)
 	case phpIniPath.MatchString(r.URL.Path):
 		h.servePHPIni(w)
+	case phpInfoPath.MatchString(r.URL.Path):
+		h.servePHPInfo(w)
 
 	// While PNG, much like gzip, has a maximum compression ratio of about
 	// 1024:1, it re-compresses very well.  Thanks to David Fifield

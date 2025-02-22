@@ -25,19 +25,19 @@ hr {width: 600px; background-color: #cccccc; border: 0px; height: 1px; color: #0
 <body><div class="center">
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><td>
-<a href="http://www.php.net/"><img border="0" src="/phpinfo.php?=PHPE9568F34-D428-11d2-A769-00AA001ACF42" alt="PHP Logo" /></a><h1 class="p">PHP Version 5.0.4</h1>
+<a href="http://www.php.net/"><img border="0" src="/phpinfo.php?=PHP{{.Hex 8}}-{{.Hex 4}}-{{.Hex 4}}-{{.Hex 4}}-{{.Hex 12}}" alt="PHP Logo" /></a><h1 class="p">PHP Version {{.Int 10}}.{{.Int 10}}.{{.Int 20}}</h1>
 </td></tr>
 </table><br />
 <table border="0" cellpadding="3" width="600">
-<tr><td class="e">System </td><td class="v">Linux opus26 3.2.0-4-amd64 #1 SMP Debian 3.2.68-1+deb7u3 x86_64 </td></tr>
-<tr><td class="e">Build Date </td><td class="v">May 16 2005 14:17:10 </td></tr>
-<tr><td class="e">Configure Command </td><td class="v"> './configure' '--enable-all' '--enable-track-vars' '--enable-discard-path' '--with-pear' '--with-pgsql' '--with-mysql=/usr/local/lib/mysql' '--with-mysqli=/usr/local/bin/mysql_config' '--with-imap=/usr/local/imap' '--with-imap-ssl=/usr' '--with-gd' '--with-freetype' '--with-freetype-dir=/usr' '--with-ttf' '--with-openssl' '--with-curl' '--with-dom' '--with-dba' '--enable-memory-limit' '--enable-exif' '--enable-ftp' '--with-png' '--with-jpeg' '--with-tiff' '--with-png-dir=/usr' '--with-jpeg-dir=/usr' '--with-tiff-dir=/usr' '--with-zlib' '--with-zip' '--with-mcal' '--with-mcrypt' '--with-pdflib' '--with-pspell' '--with-swf' '--without-fbsql' '--without-fdftk' '--without-hwapi' '--without-informix' '--without-ingres' '--without-interbase' '--without-ircg' '--without-java' '--without-ldap' '--without-mcve' '--without-ming' '--without-mnogosearch' '--without-msession' '--without-mssql' '--without-msql' '--without-oracle' '--without-oci8' '--without-oci8-instant-client' '--without-ovrimos' '--without-pfpro' '--without-qtdom' '--without-recode' '--without-snmp' '--without-sybase' '--without-sybase-ct' '--without-yaz' '--without-tidy' </td></tr>
+<tr><td class="e">System </td><td class="v">Linux {{.Alpha 4 8}} {{.Int 10}}.{{.Int 10}}.{{.Int 10}}-{{.Int 10}}-amd64 #{{.Int 10}} SMP Debian {{.Int 10}}.{{.Int 10}}.{{.Int 100}}-{{.Int 10}}+deb{{.Int 10}}u{{.Int 10}} x86_64 </td></tr>
+<tr><td class="e">Build Date </td><td class="v">May {{.IntR 1 31}} {{.IntR 2000 2038}} {{.Int 24}}:{{.IntR 10 60}}:{{.IntR 10 60}}</td></tr>
+<tr><td class="e">Configure Command </td><td class="v">{{.AutoconfCommand}}</td></tr>
 <tr><td class="e">Server API </td><td class="v">CGI </td></tr>
 <tr><td class="e">Virtual Directory Support </td><td class="v">disabled </td></tr>
 <tr><td class="e">Configuration File (php.ini) Path </td><td class="v">/usr/local/lib/php.ini </td></tr>
-<tr><td class="e">PHP API </td><td class="v">20031224 </td></tr>
-<tr><td class="e">PHP Extension </td><td class="v">20041030 </td></tr>
-<tr><td class="e">Zend Extension </td><td class="v">220040412 </td></tr>
+<tr><td class="e">PHP API </td><td class="v">{{.IntR 2000 2038}}1224 </td></tr>
+<tr><td class="e">PHP Extension </td><td class="v">{{.IntR 2000 2038}}1030 </td></tr>
+<tr><td class="e">Zend Extension </td><td class="v">{{.IntR 2000 2038}}40412 </td></tr>
 <tr><td class="e">Debug Build </td><td class="v">no </td></tr>
 <tr><td class="e">Thread Safety </td><td class="v">disabled </td></tr>
 <tr><td class="e">IPv6 Support </td><td class="v">enabled </td></tr>
@@ -46,11 +46,11 @@ hr {width: 600px; background-color: #cccccc; border: 0px; height: 1px; color: #0
 </table><br />
 <table border="0" cellpadding="3" width="600">
 <tr class="v"><td>
-<a href="http://www.zend.com/"><img border="0" src="/phpinfo.php?=PHPE9568F35-D428-11d2-A769-00AA001ACF42" alt="Zend logo" /></a>
-This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v2.0.4-dev, Copyright (c) 1998-2004 Zend Technologies<br /></td></tr>
+<a href="http://www.zend.com/"><img border="0" src="/phpinfo.php?=PHP{{.Hex 8}}-{{.Hex 4}}-{{.Hex 4}}-{{.Hex 4}}-{{.Hex 12}}" alt="Zend logo" /></a>
+This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v{{.Int 10}}.{{.Int 10}}.{{.Int 10}}-dev, Copyright (c) 1998-{{.IntR 2000 2038}} Zend Technologies<br /></td></tr>
 </table><br />
 <hr />
-<h1><a href="/phpinfo.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000">PHP Credits</a></h1>
+<h1><a href="/phpinfo.php?=PHP{{.Hex 8}}-{{.Hex 4}}-{{.Hex 4}}-{{.Hex 4}}-{{.Hex 12}}">PHP Credits</a></h1>
 <hr />
 <h1>Configuration</h1>
 <h2>PHP Core</h2>
@@ -324,11 +324,11 @@ SQLite </td></tr>
 <tr class="h"><th>Directive</th><th>Local Value</th><th>Master Value</th></tr>
 <tr><td class="e">mysql.allow_persistent</td><td class="v">Off</td><td class="v">Off</td></tr>
 <tr><td class="e">mysql.connect_timeout</td><td class="v">10</td><td class="v">10</td></tr>
-<tr><td class="e">mysql.default_host</td><td class="v">mysql.register.it</td><td class="v">mysql.register.it</td></tr>
-<tr><td class="e">mysql.default_password</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
-<tr><td class="e">mysql.default_port</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
-<tr><td class="e">mysql.default_socket</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
-<tr><td class="e">mysql.default_user</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
+<tr><td class="e">mysql.default_host</td><td class="v">mysql.register.it</td><td class="v">{{.Hostname}}</td></tr>
+<tr><td class="e">mysql.default_password</td><td class="v"><i>{{.Password 12}}</i></td><td class="v"><i>{{.Password 12}}</i></td></tr>
+<tr><td class="e">mysql.default_port</td><td class="v"><i>{{.Int 65000}}</i></td><td class="v"><i>{{.Int 65000}}</i></td></tr>
+<tr><td class="e">mysql.default_socket</td><td class="v"><i>{{.UNIXPath}}</i></td><td class="v"><i>{{.UNIXPath}}</i></td></tr>
+<tr><td class="e">mysql.default_user</td><td class="v"><i>{{.Alpha 4 20}}</i></td><td class="v"><i>{{.Alpha 4 20}}</i></td></tr>
 <tr><td class="e">mysql.max_links</td><td class="v">Unlimited</td><td class="v">Unlimited</td></tr>
 <tr><td class="e">mysql.max_persistent</td><td class="v">0</td><td class="v">0</td></tr>
 <tr><td class="e">mysql.trace_mode</td><td class="v">Off</td><td class="v">Off</td></tr>
@@ -336,16 +336,16 @@ SQLite </td></tr>
 <h2><a name="module_mysqli">mysqli</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>MysqlI Support</th><th>enabled</th></tr>
-<tr><td class="e">Client API version </td><td class="v">4.1.12 </td></tr>
-<tr><td class="e">MYSQLI_SOCKET </td><td class="v">/tmp/mysql.sock </td></tr>
+<tr><td class="e">Client API version </td><td class="v">{{.Int 5}}.{{.Int 10}}.{{.Int 30}} </td></tr>
+<tr><td class="e">MYSQLI_SOCKET </td><td class="v">{{.UNIXPath}} </td></tr>
 </table><br />
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Directive</th><th>Local Value</th><th>Master Value</th></tr>
-<tr><td class="e">mysqli.default_host</td><td class="v">mysql.register.it</td><td class="v">mysql.register.it</td></tr>
-<tr><td class="e">mysqli.default_port</td><td class="v">3306</td><td class="v">3306</td></tr>
-<tr><td class="e">mysqli.default_pw</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
-<tr><td class="e">mysqli.default_socket</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
-<tr><td class="e">mysqli.default_user</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
+<tr><td class="e">mysqli.default_host</td><td class="v">{{.Hostname}}</td><td class="v">{{.Hostname}}</td></tr>
+<tr><td class="e">mysqli.default_port</td><td class="v">{{.Int 65000}}</td><td class="v">{{.Int 65000}}</td></tr>
+<tr><td class="e">mysqli.default_pw</td><td class="v"><i>{{.Password 14}}</i></td><td class="v"><i>{{.Password 14}}</i></td></tr>
+<tr><td class="e">mysqli.default_socket</td><td class="v"><i>{{.UNIXPath}}</i></td><td class="v"><i>{{.UNIXPath}}</i></td></tr>
+<tr><td class="e">mysqli.default_user</td><td class="v"><i>{{.Alpha 4 12}}</i></td><td class="v"><i>{{.Alpha 4 12}}</i></td></tr>
 <tr><td class="e">mysqli.max_links</td><td class="v">Unlimited</td><td class="v">Unlimited</td></tr>
 <tr><td class="e">mysqli.reconnect</td><td class="v">Off</td><td class="v">Off</td></tr>
 </table><br />
@@ -358,7 +358,7 @@ SQLite </td></tr>
 <h2><a name="module_openssl">openssl</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">OpenSSL support </td><td class="v">enabled </td></tr>
-<tr><td class="e">OpenSSL Version </td><td class="v">OpenSSL 0.9.7d 17 Mar 2004 </td></tr>
+<tr><td class="e">OpenSSL Version </td><td class="v">OpenSSL 0.{{.Int 9}}.{{.Int 9}}{{.Alpha 1 1}} {{.IntR 1 30}} Mar {{.IntR 2000 2038}} </td></tr>
 </table><br />
 <h2><a name="module_pcntl">pcntl</a></h2>
 <table border="0" cellpadding="3" width="600">
@@ -367,12 +367,12 @@ SQLite </td></tr>
 <h2><a name="module_pcre">pcre</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">PCRE (Perl Compatible Regular Expressions) Support </td><td class="v">enabled </td></tr>
-<tr><td class="e">PCRE Library Version </td><td class="v">4.5 01-December-2003 </td></tr>
+<tr><td class="e">PCRE Library Version </td><td class="v">{{.Int 10}}.{{.Int 10}} 01-December-{{.IntR 2000 2038}} </td></tr>
 </table><br />
 <h2><a name="module_pgsql">pgsql</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>PostgreSQL Support</th><th>enabled</th></tr>
-<tr><td class="e">PostgreSQL(libpq) Version </td><td class="v">8.0.1 </td></tr>
+<tr><td class="e">PostgreSQL(libpq) Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 <tr><td class="e">Multibyte character support </td><td class="v">enabled </td></tr>
 <tr><td class="e">SSL support </td><td class="v">disabled </td></tr>
 <tr><td class="e">Active Persistent Links </td><td class="v">0 </td></tr>
@@ -389,7 +389,7 @@ SQLite </td></tr>
 </table><br />
 <h2><a name="module_posix">posix</a></h2>
 <table border="0" cellpadding="3" width="600">
-<tr><td class="e">Revision </td><td class="v">$Revision: 1.60.2.2 $ </td></tr>
+<tr><td class="e">Revision </td><td class="v">$Revision: {{.Int 10}}.{{.Int 100}}.{{.Int 10}}.{{.Int 10}} $ </td></tr>
 </table><br />
 <h2><a name="module_pspell">pspell</a></h2>
 <table border="0" cellpadding="3" width="600">
@@ -404,16 +404,16 @@ SQLite </td></tr>
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Directive</th><th>Local Value</th><th>Master Value</th></tr>
 <tr><td class="e">session.auto_start</td><td class="v">Off</td><td class="v">Off</td></tr>
-<tr><td class="e">session.bug_compat_42</td><td class="v">Off</td><td class="v">Off</td></tr>
-<tr><td class="e">session.bug_compat_warn</td><td class="v">On</td><td class="v">On</td></tr>
+<tr><td class="e">session.bug_compat_42</td><td class="v">On</td><td class="v">On</td></tr>
+<tr><td class="e">session.bug_compat_warn</td><td class="v">Off</td><td class="v">Off</td></tr>
 <tr><td class="e">session.cache_expire</td><td class="v">180</td><td class="v">180</td></tr>
 <tr><td class="e">session.cache_limiter</td><td class="v">nocache</td><td class="v">nocache</td></tr>
 <tr><td class="e">session.cookie_domain</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">session.cookie_lifetime</td><td class="v">0</td><td class="v">0</td></tr>
 <tr><td class="e">session.cookie_path</td><td class="v">/</td><td class="v">/</td></tr>
 <tr><td class="e">session.cookie_secure</td><td class="v">Off</td><td class="v">Off</td></tr>
-<tr><td class="e">session.entropy_file</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
-<tr><td class="e">session.entropy_length</td><td class="v">0</td><td class="v">0</td></tr>
+<tr><td class="e">session.entropy_file</td><td class="v"><i>{{.UNIXPath}}</i></td><td class="v"><i>{{.UNIXPath}}</i></td></tr>
+<tr><td class="e">session.entropy_length</td><td class="v">{{.Int 100}}</td><td class="v">{{.Int 100}}</td></tr>
 <tr><td class="e">session.gc_divisor</td><td class="v">1000</td><td class="v">1000</td></tr>
 <tr><td class="e">session.gc_maxlifetime</td><td class="v">1440</td><td class="v">1440</td></tr>
 <tr><td class="e">session.gc_probability</td><td class="v">1</td><td class="v">1</td></tr>
@@ -435,7 +435,7 @@ SQLite </td></tr>
 <h2><a name="module_SimpleXML">SimpleXML</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Simplexml support</th><th>enabled</th></tr>
-<tr><td class="e">Revision </td><td class="v">$Revision: 1.139.2.4 $ </td></tr>
+<tr><td class="e">Revision </td><td class="v">$Revision: {{.Int 10}}.{{.Int 200}}.{{.Int 10}}.{{.Int 10}} $ </td></tr>
 <tr><td class="e">Schema support </td><td class="v">enabled </td></tr>
 </table><br />
 <h2><a name="module_soap">soap</a></h2>
@@ -462,7 +462,7 @@ SQLite </td></tr>
 <h2><a name="module_SQLite">SQLite</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>SQLite support</th><th>enabled</th></tr>
-<tr><td class="e">PECL Module version </td><td class="v">2.0-dev $Id: sqlite.c,v 1.146.2.3 2004/09/26 01:41:40 wez Exp $ </td></tr>
+<tr><td class="e">PECL Module version </td><td class="v">{{.Int 10}}.{{.Int 10}}-dev $Id: sqlite.c,v {{.Int 10}}.{{.Int 100}}.{{.Int 10}}.{{.Int 10}} {{.IntR 2000 2038}}/09/26 01:41:40 {{.Alpha 4 10}} Exp $ </td></tr>
 <tr><td class="e">SQLite Library </td><td class="v">2.8.14 </td></tr>
 <tr><td class="e">SQLite Encoding </td><td class="v">iso8859 </td></tr>
 </table><br />
@@ -484,10 +484,10 @@ SQLite </td></tr>
 <tr><td class="e">assert.quiet_eval</td><td class="v">0</td><td class="v">0</td></tr>
 <tr><td class="e">assert.warning</td><td class="v">1</td><td class="v">1</td></tr>
 <tr><td class="e">auto_detect_line_endings</td><td class="v">0</td><td class="v">0</td></tr>
-<tr><td class="e">date.default_latitude</td><td class="v">31.7667</td><td class="v">31.7667</td></tr>
-<tr><td class="e">date.default_longitude</td><td class="v">35.2333</td><td class="v">35.2333</td></tr>
-<tr><td class="e">date.sunrise_zenith</td><td class="v">90.83</td><td class="v">90.83</td></tr>
-<tr><td class="e">date.sunset_zenith</td><td class="v">90.83</td><td class="v">90.83</td></tr>
+<tr><td class="e">date.default_latitude</td><td class="v">{{.IntR 1 180}}.{{.IntR 0 10000}}</td><td class="v">{{.IntR 1 180}}.{{.IntR 0 10000}}</td></tr>
+<tr><td class="e">date.default_longitude</td><td class="v">{{.IntR 1 180}}.{{.IntR 0 10000}}</td><td class="v">{{.IntR 1 180}}.{{.IntR 0 10000}}</td></tr>
+<tr><td class="e">date.sunrise_zenith</td><td class="v">{{.IntR 20 90}}.{{.IntR 0 100}}</td><td class="v">{{.IntR 20 90}}.{{.IntR 0 100}}</td></tr>
+<tr><td class="e">date.sunset_zenith</td><td class="v">{{.IntR 20 90}}.{{.Int 100}}</td><td class="v">{{.IntR 20 90}}.{{.Int 100}}</td></tr>
 <tr><td class="e">default_socket_timeout</td><td class="v">60</td><td class="v">60</td></tr>
 <tr><td class="e">safe_mode_allowed_env_vars</td><td class="v">PHP_</td><td class="v">PHP_</td></tr>
 <tr><td class="e">safe_mode_protected_env_vars</td><td class="v">LD_LIBRARY_PATH</td><td class="v">LD_LIBRARY_PATH</td></tr>
@@ -497,7 +497,7 @@ SQLite </td></tr>
 <h2><a name="module_sysvmsg">sysvmsg</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">sysvmsg support </td><td class="v">enabled </td></tr>
-<tr><td class="e">Revision </td><td class="v">$Revision: 1.16.2.3 $ </td></tr>
+<tr><td class="e">Revision </td><td class="v">$Revision: {{.Int 10}}.{{.Int 100}}.{{.Int 10}}.{{.Int 10}} $ </td></tr>
 </table><br />
 <h2><a name="module_tokenizer">tokenizer</a></h2>
 <table border="0" cellpadding="3" width="600">
@@ -512,12 +512,12 @@ SQLite </td></tr>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">XML Support </td><td class="v">active </td></tr>
 <tr><td class="e">XML Namespace Support </td><td class="v">active </td></tr>
-<tr><td class="e">libxml2 Version </td><td class="v">2.6.9 </td></tr>
+<tr><td class="e">libxml2 Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 </table><br />
 <h2><a name="module_xmlrpc">xmlrpc</a></h2>
 <table border="0" cellpadding="3" width="600">
-<tr><td class="e">core library version </td><td class="v">xmlrpc-epi v. 0.51 </td></tr>
-<tr><td class="e">php extension version </td><td class="v">0.51 </td></tr>
+<tr><td class="e">core library version </td><td class="v">xmlrpc-epi v. {{.Int 10}}.{{.Int 100}} </td></tr>
+<tr><td class="e">php extension version </td><td class="v">{{.Int 10}}.{{.Int 100}} </td></tr>
 <tr><td class="e">author </td><td class="v">Dan Libby </td></tr>
 <tr><td class="e">homepage </td><td class="v">http://xmlrpc-epi.sourceforge.net </td></tr>
 <tr><td class="e">open sourced by </td><td class="v">Epinions.com </td></tr>
@@ -525,10 +525,10 @@ SQLite </td></tr>
 <h2><a name="module_xsl">xsl</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">XSL </td><td class="v">enabled </td></tr>
-<tr><td class="e">libxslt Version </td><td class="v">1.1.6 </td></tr>
-<tr><td class="e">libxslt compiled against libxml Version </td><td class="v">2.6.9 </td></tr>
+<tr><td class="e">libxslt Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
+<tr><td class="e">libxslt compiled against libxml Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 <tr><td class="e">EXSLT </td><td class="v">enabled </td></tr>
-<tr><td class="e">libexslt Version </td><td class="v">1.1.6 </td></tr>
+<tr><td class="e">libexslt Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 </table><br />
 <h2><a name="module_yp">yp</a></h2>
 <table border="0" cellpadding="3" width="600">
@@ -537,8 +537,8 @@ SQLite </td></tr>
 <h2><a name="module_zlib">zlib</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">ZLib Support </td><td class="v">enabled </td></tr>
-<tr><td class="e">Compiled Version </td><td class="v">1.2.1.1 </td></tr>
-<tr><td class="e">Linked Version </td><td class="v">1.2.1.1 </td></tr>
+<tr><td class="e">Compiled Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
+<tr><td class="e">Linked Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 </table><br />
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Directive</th><th>Local Value</th><th>Master Value</th></tr>
@@ -558,10 +558,10 @@ SQLite </td></tr>
 <h2>Environment</h2>
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Variable</th><th>Value</th></tr>
-<tr><td class="e">REDIRECT_UNIQUE_ID </td><td class="v">Z7PjsVFYMRsAAGnFv@gAAAB2 </td></tr>
+<tr><td class="e">REDIRECT_UNIQUE_ID </td><td class="v">{{.Alpha 16 16}}@{{.Alpha 6 6}} </td></tr>
 <tr><td class="e">REDIRECT_SCRIPT_URL </td><td class="v">/phpinfo.php </td></tr>
-<tr><td class="e">REDIRECT_SCRIPT_URI </td><td class="v">http://argentinglesi.com/phpinfo.php </td></tr>
-<tr><td class="e">REDIRECT_URLEXCHANGE </td><td class="v">https://www.dataemail.net/exchange/ </td></tr>
+<tr><td class="e">REDIRECT_SCRIPT_URI </td><td class="v">http://{{.Hostname}}/phpinfo.php </td></tr>
+<tr><td class="e">REDIRECT_URLEXCHANGE </td><td class="v">https://{{.Hostname}}/exchange/ </td></tr>
 <tr><td class="e">REDIRECT_NOSIMPLE </td><td class="v">0 </td></tr>
 <tr><td class="e">REDIRECT_SPECIAL </td><td class="v">0 </td></tr>
 <tr><td class="e">REDIRECT_NEXT </td><td class="v">1 </td></tr>
@@ -570,38 +570,38 @@ SQLite </td></tr>
 <tr><td class="e">REDIRECT_PLATFORM </td><td class="v">domain </td></tr>
 <tr><td class="e">REDIRECT_HANDLER </td><td class="v">php-cgiwrap </td></tr>
 <tr><td class="e">REDIRECT_STATUS </td><td class="v">200 </td></tr>
-<tr><td class="e">UNIQUE_ID </td><td class="v">Z7PjsVFYMRsAAGnFv@gAAAB2 </td></tr>
+<tr><td class="e">UNIQUE_ID </td><td class="v">{{.Alpha 16 16}}@{{.Alpha 6 6}} </td></tr>
 <tr><td class="e">SCRIPT_URL </td><td class="v">/phpinfo.php </td></tr>
-<tr><td class="e">SCRIPT_URI </td><td class="v">http://argentinglesi.com/phpinfo.php </td></tr>
-<tr><td class="e">URLEXCHANGE </td><td class="v">https://www.dataemail.net/exchange/ </td></tr>
+<tr><td class="e">SCRIPT_URI </td><td class="v">http://{{.Hostname}}/phpinfo.php </td></tr>
+<tr><td class="e">URLEXCHANGE </td><td class="v">https://{{.Hostname}}/exchange/ </td></tr>
 <tr><td class="e">NOSIMPLE </td><td class="v">0 </td></tr>
 <tr><td class="e">SPECIAL </td><td class="v">0 </td></tr>
 <tr><td class="e">NEXT </td><td class="v">1 </td></tr>
 <tr><td class="e">FWRAP </td><td class="v">1 </td></tr>
 <tr><td class="e">CGIW </td><td class="v">On </td></tr>
 <tr><td class="e">PHPRC </td><td class="v">/conf/php </td></tr>
-<tr><td class="e">BRAND </td><td class="v">register.it </td></tr>
+<tr><td class="e">BRAND </td><td class="v">{{.Hostname}} </td></tr>
 <tr><td class="e">PLATFORM </td><td class="v">domain </td></tr>
-<tr><td class="e">HTTP_HOST </td><td class="v">argentinglesi.com </td></tr>
+<tr><td class="e">HTTP_HOST </td><td class="v">{{.Hostname}} </td></tr>
 <tr><td class="e">HTTP_CACHE_CONTROL </td><td class="v">max-age=0 </td></tr>
 <tr><td class="e">HTTP_UPGRADE_INSECURE_REQUESTS </td><td class="v">1 </td></tr>
 <tr><td class="e">HTTP_DNT </td><td class="v">1 </td></tr>
 <tr><td class="e">HTTP_USER_AGENT </td><td class="v">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 </td></tr>
 <tr><td class="e">HTTP_ACCEPT </td><td class="v">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7 </td></tr>
-<tr><td class="e">HTTP_REFERER </td><td class="v">https://www.google.com/ </td></tr>
+<tr><td class="e">HTTP_REFERER </td><td class="v">https://{{.Hostname}}/ </td></tr>
 <tr><td class="e">HTTP_ACCEPT_ENCODING </td><td class="v">gzip, deflate </td></tr>
 <tr><td class="e">HTTP_ACCEPT_LANGUAGE </td><td class="v">en-US,en;q=0.9 </td></tr>
 <tr><td class="e">PATH </td><td class="v">/usr/bin:/bin </td></tr>
 <tr><td class="e">SERVER_SIGNATURE </td><td class="v"><i>no value</i> </td></tr>
 <tr><td class="e">SERVER_SOFTWARE </td><td class="v">Apache </td></tr>
-<tr><td class="e">SERVER_NAME </td><td class="v">argentinglesi.com </td></tr>
-<tr><td class="e">SERVER_ADDR </td><td class="v">172.29.155.25 </td></tr>
-<tr><td class="e">SERVER_PORT </td><td class="v">80 </td></tr>
-<tr><td class="e">REMOTE_ADDR </td><td class="v">157.131.203.26 </td></tr>
-<tr><td class="e">DOCUMENT_ROOT </td><td class="v">/ </td></tr>
+<tr><td class="e">SERVER_NAME </td><td class="v">{{.Hostname}} </td></tr>
+<tr><td class="e">SERVER_ADDR </td><td class="v">{{.IP}} </td></tr>
+<tr><td class="e">SERVER_PORT </td><td class="v">{{.Int 65000}} </td></tr>
+<tr><td class="e">REMOTE_ADDR </td><td class="v">{{.IP}}6 </td></tr>
+<tr><td class="e">DOCUMENT_ROOT </td><td class="v">{{.UNIXPath}} </td></tr>
 <tr><td class="e">SERVER_ADMIN </td><td class="v">[no address given] </td></tr>
 <tr><td class="e">SCRIPT_FILENAME </td><td class="v">/phpinfo.php </td></tr>
-<tr><td class="e">REMOTE_PORT </td><td class="v">28118 </td></tr>
+<tr><td class="e">REMOTE_PORT </td><td class="v">{{.Int 65000}} </td></tr>
 <tr><td class="e">REDIRECT_QUERY_STRING </td><td class="v">a[] </td></tr>
 <tr><td class="e">REDIRECT_URL </td><td class="v">/phpinfo.php </td></tr>
 <tr><td class="e">GATEWAY_INTERFACE </td><td class="v">CGI/1.1 </td></tr>
@@ -631,10 +631,10 @@ SQLite </td></tr>
     [0] => 
 )
 </pre></td></tr>
-<tr><td class="e">_SERVER["REDIRECT_UNIQUE_ID"]</td><td class="v">Z7PjsVFYMRsAAGnFv@gAAAB2</td></tr>
+<tr><td class="e">_SERVER["REDIRECT_UNIQUE_ID"]</td><td class="v">{{.Alpha 16 15}}@{{.Alpha 6 6}}</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_SCRIPT_URL"]</td><td class="v">/phpinfo.php</td></tr>
-<tr><td class="e">_SERVER["REDIRECT_SCRIPT_URI"]</td><td class="v">http://argentinglesi.com/phpinfo.php</td></tr>
-<tr><td class="e">_SERVER["REDIRECT_URLEXCHANGE"]</td><td class="v">https://www.dataemail.net/exchange/</td></tr>
+<tr><td class="e">_SERVER["REDIRECT_SCRIPT_URI"]</td><td class="v">http://{{.Hostname}}/phpinfo.php</td></tr>
+<tr><td class="e">_SERVER["REDIRECT_URLEXCHANGE"]</td><td class="v">https://{{.Hostname}}/exchange/</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_NOSIMPLE"]</td><td class="v">0</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_SPECIAL"]</td><td class="v">0</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_NEXT"]</td><td class="v">1</td></tr>
@@ -643,19 +643,19 @@ SQLite </td></tr>
 <tr><td class="e">_SERVER["REDIRECT_PLATFORM"]</td><td class="v">domain</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_HANDLER"]</td><td class="v">php-cgiwrap</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_STATUS"]</td><td class="v">200</td></tr>
-<tr><td class="e">_SERVER["UNIQUE_ID"]</td><td class="v">Z7PjsVFYMRsAAGnFv@gAAAB2</td></tr>
+<tr><td class="e">_SERVER["UNIQUE_ID"]</td><td class="v">{{.Alpha 16 16}}@{{.Alpha 6 6}}</td></tr>
 <tr><td class="e">_SERVER["SCRIPT_URL"]</td><td class="v">/phpinfo.php</td></tr>
-<tr><td class="e">_SERVER["SCRIPT_URI"]</td><td class="v">http://argentinglesi.com/phpinfo.php</td></tr>
-<tr><td class="e">_SERVER["URLEXCHANGE"]</td><td class="v">https://www.dataemail.net/exchange/</td></tr>
+<tr><td class="e">_SERVER["SCRIPT_URI"]</td><td class="v">http://{{.Hostname}}/phpinfo.php</td></tr>
+<tr><td class="e">_SERVER["URLEXCHANGE"]</td><td class="v">https://{{.Hostname}}/exchange/</td></tr>
 <tr><td class="e">_SERVER["NOSIMPLE"]</td><td class="v">0</td></tr>
 <tr><td class="e">_SERVER["SPECIAL"]</td><td class="v">0</td></tr>
 <tr><td class="e">_SERVER["NEXT"]</td><td class="v">1</td></tr>
 <tr><td class="e">_SERVER["FWRAP"]</td><td class="v">1</td></tr>
 <tr><td class="e">_SERVER["CGIW"]</td><td class="v">On</td></tr>
-<tr><td class="e">_SERVER["PHPRC"]</td><td class="v">/conf/php</td></tr>
-<tr><td class="e">_SERVER["BRAND"]</td><td class="v">register.it</td></tr>
+<tr><td class="e">_SERVER["PHPRC"]</td><td class="v">{{.UNIXPath}}</td></tr>
+<tr><td class="e">_SERVER["BRAND"]</td><td class="v">{{.Hostname}}</td></tr>
 <tr><td class="e">_SERVER["PLATFORM"]</td><td class="v">domain</td></tr>
-<tr><td class="e">_SERVER["HTTP_HOST"]</td><td class="v">argentinglesi.com</td></tr>
+<tr><td class="e">_SERVER["HTTP_HOST"]</td><td class="v">{{.Hostname}}</td></tr>
 <tr><td class="e">_SERVER["HTTP_CACHE_CONTROL"]</td><td class="v">max-age=0</td></tr>
 <tr><td class="e">_SERVER["HTTP_UPGRADE_INSECURE_REQUESTS"]</td><td class="v">1</td></tr>
 <tr><td class="e">_SERVER["HTTP_DNT"]</td><td class="v">1</td></tr>
@@ -667,14 +667,14 @@ SQLite </td></tr>
 <tr><td class="e">_SERVER["PATH"]</td><td class="v">/usr/bin:/bin</td></tr>
 <tr><td class="e">_SERVER["SERVER_SIGNATURE"]</td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">_SERVER["SERVER_SOFTWARE"]</td><td class="v">Apache</td></tr>
-<tr><td class="e">_SERVER["SERVER_NAME"]</td><td class="v">argentinglesi.com</td></tr>
-<tr><td class="e">_SERVER["SERVER_ADDR"]</td><td class="v">172.29.155.25</td></tr>
-<tr><td class="e">_SERVER["SERVER_PORT"]</td><td class="v">80</td></tr>
-<tr><td class="e">_SERVER["REMOTE_ADDR"]</td><td class="v">157.131.203.26</td></tr>
+<tr><td class="e">_SERVER["SERVER_NAME"]</td><td class="v">{{.Hostname}}</td></tr>
+<tr><td class="e">_SERVER["SERVER_ADDR"]</td><td class="v">{{.IP}}</td></tr>
+<tr><td class="e">_SERVER["SERVER_PORT"]</td><td class="v">{{.Int 65000}}</td></tr>
+<tr><td class="e">_SERVER["REMOTE_ADDR"]</td><td class="v">{{.IP}}</td></tr>
 <tr><td class="e">_SERVER["DOCUMENT_ROOT"]</td><td class="v">/</td></tr>
 <tr><td class="e">_SERVER["SERVER_ADMIN"]</td><td class="v">[no address given]</td></tr>
 <tr><td class="e">_SERVER["SCRIPT_FILENAME"]</td><td class="v">/phpinfo.php</td></tr>
-<tr><td class="e">_SERVER["REMOTE_PORT"]</td><td class="v">28118</td></tr>
+<tr><td class="e">_SERVER["REMOTE_PORT"]</td><td class="v">{{.Int 65000}}</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_QUERY_STRING"]</td><td class="v">a[]</td></tr>
 <tr><td class="e">_SERVER["REDIRECT_URL"]</td><td class="v">/phpinfo.php</td></tr>
 <tr><td class="e">_SERVER["GATEWAY_INTERFACE"]</td><td class="v">CGI/1.1</td></tr>
@@ -695,10 +695,10 @@ SQLite </td></tr>
 )
 </pre></td></tr>
 <tr><td class="e">_SERVER["argc"]</td><td class="v">1</td></tr>
-<tr><td class="e">_ENV["REDIRECT_UNIQUE_ID"]</td><td class="v">Z7PjsVFYMRsAAGnFv@gAAAB2</td></tr>
+<tr><td class="e">_ENV["REDIRECT_UNIQUE_ID"]</td><td class="v">{{.Alpha 16 16}}@{{.Alpha 6 6}}</td></tr>
 <tr><td class="e">_ENV["REDIRECT_SCRIPT_URL"]</td><td class="v">/phpinfo.php</td></tr>
-<tr><td class="e">_ENV["REDIRECT_SCRIPT_URI"]</td><td class="v">http://argentinglesi.com/phpinfo.php</td></tr>
-<tr><td class="e">_ENV["REDIRECT_URLEXCHANGE"]</td><td class="v">https://www.dataemail.net/exchange/</td></tr>
+<tr><td class="e">_ENV["REDIRECT_SCRIPT_URI"]</td><td class="v">http://{{.Hostname}}/phpinfo.php</td></tr>
+<tr><td class="e">_ENV["REDIRECT_URLEXCHANGE"]</td><td class="v">https://{{.Hostname}}/exchange/</td></tr>
 <tr><td class="e">_ENV["REDIRECT_NOSIMPLE"]</td><td class="v">0</td></tr>
 <tr><td class="e">_ENV["REDIRECT_SPECIAL"]</td><td class="v">0</td></tr>
 <tr><td class="e">_ENV["REDIRECT_NEXT"]</td><td class="v">1</td></tr>
@@ -707,19 +707,19 @@ SQLite </td></tr>
 <tr><td class="e">_ENV["REDIRECT_PLATFORM"]</td><td class="v">domain</td></tr>
 <tr><td class="e">_ENV["REDIRECT_HANDLER"]</td><td class="v">php-cgiwrap</td></tr>
 <tr><td class="e">_ENV["REDIRECT_STATUS"]</td><td class="v">200</td></tr>
-<tr><td class="e">_ENV["UNIQUE_ID"]</td><td class="v">Z7PjsVFYMRsAAGnFv@gAAAB2</td></tr>
+<tr><td class="e">_ENV["UNIQUE_ID"]</td><td class="v">{{.Alpha 16 16}}@{{.Alpha 6 6}}</td></tr>
 <tr><td class="e">_ENV["SCRIPT_URL"]</td><td class="v">/phpinfo.php</td></tr>
-<tr><td class="e">_ENV["SCRIPT_URI"]</td><td class="v">http://argentinglesi.com/phpinfo.php</td></tr>
-<tr><td class="e">_ENV["URLEXCHANGE"]</td><td class="v">https://www.dataemail.net/exchange/</td></tr>
+<tr><td class="e">_ENV["SCRIPT_URI"]</td><td class="v">http://{{.Hostname}}/phpinfo.php</td></tr>
+<tr><td class="e">_ENV["URLEXCHANGE"]</td><td class="v">https://{{.Hostname}}/exchange/</td></tr>
 <tr><td class="e">_ENV["NOSIMPLE"]</td><td class="v">0</td></tr>
 <tr><td class="e">_ENV["SPECIAL"]</td><td class="v">0</td></tr>
 <tr><td class="e">_ENV["NEXT"]</td><td class="v">1</td></tr>
 <tr><td class="e">_ENV["FWRAP"]</td><td class="v">1</td></tr>
 <tr><td class="e">_ENV["CGIW"]</td><td class="v">On</td></tr>
 <tr><td class="e">_ENV["PHPRC"]</td><td class="v">/conf/php</td></tr>
-<tr><td class="e">_ENV["BRAND"]</td><td class="v">register.it</td></tr>
+<tr><td class="e">_ENV["BRAND"]</td><td class="v">{{.Hostname}}</td></tr>
 <tr><td class="e">_ENV["PLATFORM"]</td><td class="v">domain</td></tr>
-<tr><td class="e">_ENV["HTTP_HOST"]</td><td class="v">argentinglesi.com</td></tr>
+<tr><td class="e">_ENV["HTTP_HOST"]</td><td class="v">{{.Hostname}}</td></tr>
 <tr><td class="e">_ENV["HTTP_CACHE_CONTROL"]</td><td class="v">max-age=0</td></tr>
 <tr><td class="e">_ENV["HTTP_UPGRADE_INSECURE_REQUESTS"]</td><td class="v">1</td></tr>
 <tr><td class="e">_ENV["HTTP_DNT"]</td><td class="v">1</td></tr>
@@ -731,14 +731,14 @@ SQLite </td></tr>
 <tr><td class="e">_ENV["PATH"]</td><td class="v">/usr/bin:/bin</td></tr>
 <tr><td class="e">_ENV["SERVER_SIGNATURE"]</td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">_ENV["SERVER_SOFTWARE"]</td><td class="v">Apache</td></tr>
-<tr><td class="e">_ENV["SERVER_NAME"]</td><td class="v">argentinglesi.com</td></tr>
-<tr><td class="e">_ENV["SERVER_ADDR"]</td><td class="v">172.29.155.25</td></tr>
-<tr><td class="e">_ENV["SERVER_PORT"]</td><td class="v">80</td></tr>
-<tr><td class="e">_ENV["REMOTE_ADDR"]</td><td class="v">157.131.203.26</td></tr>
+<tr><td class="e">_ENV["SERVER_NAME"]</td><td class="v">{{.Hostname}}</td></tr>
+<tr><td class="e">_ENV["SERVER_ADDR"]</td><td class="v">{{.IP}}</td></tr>
+<tr><td class="e">_ENV["SERVER_PORT"]</td><td class="v">{{.Int 65000}}</td></tr>
+<tr><td class="e">_ENV["REMOTE_ADDR"]</td><td class="v">{{.IP}}</td></tr>
 <tr><td class="e">_ENV["DOCUMENT_ROOT"]</td><td class="v">/</td></tr>
 <tr><td class="e">_ENV["SERVER_ADMIN"]</td><td class="v">[no address given]</td></tr>
 <tr><td class="e">_ENV["SCRIPT_FILENAME"]</td><td class="v">/phpinfo.php</td></tr>
-<tr><td class="e">_ENV["REMOTE_PORT"]</td><td class="v">28118</td></tr>
+<tr><td class="e">_ENV["REMOTE_PORT"]</td><td class="v">{{.Int 65000}}</td></tr>
 <tr><td class="e">_ENV["REDIRECT_QUERY_STRING"]</td><td class="v">a[]</td></tr>
 <tr><td class="e">_ENV["REDIRECT_URL"]</td><td class="v">/phpinfo.php</td></tr>
 <tr><td class="e">_ENV["GATEWAY_INTERFACE"]</td><td class="v">CGI/1.1</td></tr>
