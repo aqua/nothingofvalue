@@ -34,10 +34,10 @@ hr {width: 600px; background-color: #cccccc; border: 0px; height: 1px; color: #0
 <tr><td class="e">Configure Command </td><td class="v">{{.AutoconfCommand}}</td></tr>
 <tr><td class="e">Server API </td><td class="v">CGI </td></tr>
 <tr><td class="e">Virtual Directory Support </td><td class="v">disabled </td></tr>
-<tr><td class="e">Configuration File (php.ini) Path </td><td class="v">/usr/local/lib/php.ini </td></tr>
-<tr><td class="e">PHP API </td><td class="v">{{.IntR 2000 2038}}1224 </td></tr>
-<tr><td class="e">PHP Extension </td><td class="v">{{.IntR 2000 2038}}1030 </td></tr>
-<tr><td class="e">Zend Extension </td><td class="v">{{.IntR 2000 2038}}40412 </td></tr>
+<tr><td class="e">Configuration File (php.ini) Path </td><td class="v">{{.UNIXPath}}/php.ini </td></tr>
+<tr><td class="e">PHP API </td><td class="v">{{.Date ""}}</td></tr>
+<tr><td class="e">PHP Extension </td><td class="v">{{.Date ""}}</td></tr>
+<tr><td class="e">Zend Extension </td><td class="v">{{.Date ""}}</td></tr>
 <tr><td class="e">Debug Build </td><td class="v">no </td></tr>
 <tr><td class="e">Thread Safety </td><td class="v">disabled </td></tr>
 <tr><td class="e">IPv6 Support </td><td class="v">enabled </td></tr>
@@ -64,7 +64,7 @@ This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v
 <tr><td class="e">asp_tags</td><td class="v">On</td><td class="v">On</td></tr>
 <tr><td class="e">auto_append_file</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">auto_globals_jit</td><td class="v">On</td><td class="v">On</td></tr>
-<tr><td class="e">auto_prepend_file</td><td class="v">/usr/local/lib/include_disable_php.php</td><td class="v">/usr/local/lib/include_disable_php.php</td></tr>
+<tr><td class="e">auto_prepend_file</td><td class="v">{{.UNIXPath}}/lib/include_disable_php.php</td><td class="v">{{.UNIXPath}}/lib/include_disable_php.php</td></tr>
 <tr><td class="e">browscap</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">default_charset</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">default_mimetype</td><td class="v">text/html</td><td class="v">text/html</td></tr>
@@ -78,7 +78,7 @@ This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v
 <tr><td class="e">docref_root</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">enable_dl</td><td class="v">Off</td><td class="v">Off</td></tr>
 <tr><td class="e">error_append_string</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
-<tr><td class="e">error_log</td><td class="v">/tmp/php_error.log</td><td class="v">/tmp/php_error.log</td></tr>
+<tr><td class="e">error_log</td><td class="v">{{.UNIXPath}}/php_error.log</td><td class="v">{{.UNIXPath}}/php_error.log</td></tr>
 <tr><td class="e">error_prepend_string</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">error_reporting</td><td class="v">2039</td><td class="v">2039</td></tr>
 <tr><td class="e">expose_php</td><td class="v">On</td><td class="v">On</td></tr>
@@ -95,7 +95,7 @@ This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v
 <tr><td class="e">ignore_repeated_source</td><td class="v">Off</td><td class="v">Off</td></tr>
 <tr><td class="e">ignore_user_abort</td><td class="v">Off</td><td class="v">Off</td></tr>
 <tr><td class="e">implicit_flush</td><td class="v">Off</td><td class="v">Off</td></tr>
-<tr><td class="e">include_path</td><td class="v">.:/usr/local/lib/php</td><td class="v">.:/usr/local/lib/php</td></tr>
+<tr><td class="e">include_path</td><td class="v">.:{{.UNIXPath}}/lib/php</td><td class="v">.:{{.UNIXPath}}/lib/php</td></tr>
 <tr><td class="e">log_errors</td><td class="v">On</td><td class="v">On</td></tr>
 <tr><td class="e">log_errors_max_len</td><td class="v">1024</td><td class="v">1024</td></tr>
 <tr><td class="e">magic_quotes_gpc</td><td class="v">On</td><td class="v">On</td></tr>
@@ -129,7 +129,7 @@ This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v
 <tr><td class="e">track_errors</td><td class="v">Off</td><td class="v">Off</td></tr>
 <tr><td class="e">unserialize_callback_func</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">upload_max_filesize</td><td class="v">10M</td><td class="v">10M</td></tr>
-<tr><td class="e">upload_tmp_dir</td><td class="v">/tmp</td><td class="v">/tmp</td></tr>
+<tr><td class="e">upload_tmp_dir</td><td class="v">{{.UNIXPath}}/tmp</td><td class="v">{{.UNIXPath}}/tmp</td></tr>
 <tr><td class="e">user_dir</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">variables_order</td><td class="v">EGPCS</td><td class="v">EGPCS</td></tr>
 <tr><td class="e">xmlrpc_error_number</td><td class="v">0</td><td class="v">0</td></tr>
@@ -153,7 +153,7 @@ This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v
 <h2><a name="module_cpdf">cpdf</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">CPDF Support </td><td class="v">enabled </td></tr>
-<tr><td class="e">Version </td><td class="v">2.02-r1-2 </td></tr>
+<tr><td class="e">Version </td><td class="v">{{.Int 10}}.0{{.Int 10}}-r{{.Int 10}}-{{.Int 10}} </td></tr>
 </table><br />
 <h2><a name="module_ctype">ctype</a></h2>
 <table border="0" cellpadding="3" width="600">
@@ -162,7 +162,7 @@ This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v
 <h2><a name="module_curl">curl</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">CURL support </td><td class="v">enabled </td></tr>
-<tr><td class="e">CURL Information </td><td class="v">libcurl/7.12.2 OpenSSL/0.9.7d zlib/1.2.1.1 </td></tr>
+<tr><td class="e">CURL Information </td><td class="v">libcurl/{{.Int 10}}.{{.Int 100}}.{{.Int 10}} OpenSSL/{{.Int 10}}.{{.Int 10}}.{{.Int 10}}d zlib/{{.Int 10}}.{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 </table><br />
 <h2><a name="module_dba">dba</a></h2>
 <table border="0" cellpadding="3" width="600">
@@ -172,7 +172,7 @@ This program makes use of the Zend Scripting Language Engine:<br />Zend Engine v
 <h2><a name="module_dbx">dbx</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">dbx support </td><td class="v">enabled </td></tr>
-<tr><td class="e">dbx version </td><td class="v">1.1.0 </td></tr>
+<tr><td class="e">dbx version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 <tr><td class="e">supported databases </td><td class="v">MySQL
 ODBC
 PostgreSQL
@@ -193,8 +193,8 @@ SQLite </td></tr>
 <h2><a name="module_dom">dom</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">DOM/XML </td><td class="v">enabled </td></tr>
-<tr><td class="e">DOM/XML API Version </td><td class="v">20031129 </td></tr>
-<tr><td class="e">libxml Version </td><td class="v">2.6.9 </td></tr>
+<tr><td class="e">DOM/XML API Version </td><td class="v">{{.Date ""}} </td></tr>
+<tr><td class="e">libxml Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 <tr><td class="e">HTML Support </td><td class="v">enabled </td></tr>
 <tr><td class="e">XPath Support </td><td class="v">enabled </td></tr>
 <tr><td class="e">XPointer Support </td><td class="v">enabled </td></tr>
@@ -204,7 +204,7 @@ SQLite </td></tr>
 <h2><a name="module_exif">exif</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">EXIF Support </td><td class="v">enabled </td></tr>
-<tr><td class="e">EXIF Version </td><td class="v">1.4 $Id: exif.c,v 1.162.2.8 2005/03/17 17:20:35 iliaa Exp $ </td></tr>
+<tr><td class="e">EXIF Version </td><td class="v">{{.Int 10}}.{{.Int 10}} $Id: exif.c,v {{.Int 10}}.{{.Int 100}}.{{.Int 10}}.{{.Int 10}} {{.Date "/"}} {{.TimeHMS}} {{.Hostname}} Exp $ </td></tr>
 <tr><td class="e">Supported EXIF Version </td><td class="v">0220 </td></tr>
 <tr><td class="e">Supported filetypes </td><td class="v">JPEG,TIFF </td></tr>
 </table><br />
@@ -222,7 +222,7 @@ SQLite </td></tr>
 <tr><td class="e">GD Version </td><td class="v">bundled (2.0.28 compatible) </td></tr>
 <tr><td class="e">FreeType Support </td><td class="v">enabled </td></tr>
 <tr><td class="e">FreeType Linkage </td><td class="v">with freetype </td></tr>
-<tr><td class="e">FreeType Version </td><td class="v">2.1.7 </td></tr>
+<tr><td class="e">FreeType Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 <tr><td class="e">GIF Read Support </td><td class="v">enabled </td></tr>
 <tr><td class="e">GIF Create Support </td><td class="v">enabled </td></tr>
 <tr><td class="e">JPG Support </td><td class="v">enabled </td></tr>
@@ -242,7 +242,7 @@ SQLite </td></tr>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">iconv support </td><td class="v">enabled </td></tr>
 <tr><td class="e">iconv implementation </td><td class="v">glibc </td></tr>
-<tr><td class="e">iconv library version </td><td class="v">2.3.2 </td></tr>
+<tr><td class="e">iconv library version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 </table><br />
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Directive</th><th>Local Value</th><th>Master Value</th></tr>
@@ -252,13 +252,13 @@ SQLite </td></tr>
 </table><br />
 <h2><a name="module_imap">imap</a></h2>
 <table border="0" cellpadding="3" width="600">
-<tr><td class="e">IMAP c-Client Version </td><td class="v">2004 </td></tr>
+<tr><td class="e">IMAP c-Client Version </td><td class="v">{{.IntR 2000 2038}} </td></tr>
 <tr><td class="e">SSL Support </td><td class="v">enabled </td></tr>
 </table><br />
 <h2><a name="module_libxml">libxml</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">libXML support </td><td class="v">active </td></tr>
-<tr><td class="e">libXML Version </td><td class="v">2.6.9 </td></tr>
+<tr><td class="e">libXML Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 <tr><td class="e">libXML streams </td><td class="v">enabled </td></tr>
 </table><br />
 <h2><a name="module_mbstring">mbstring</a></h2>
@@ -266,7 +266,7 @@ SQLite </td></tr>
 <tr><td class="e">Multibyte Support </td><td class="v">enabled </td></tr>
 <tr><td class="e">Multibyte string engine </td><td class="v">libmbfl </td></tr>
 <tr><td class="e">Multibyte (japanese) regex support </td><td class="v">enabled </td></tr>
-<tr><td class="e">Multibyte regex (oniguruma) version </td><td class="v">3.7.0 </td></tr>
+<tr><td class="e">Multibyte regex (oniguruma) version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
 </table><br />
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>mbstring extension makes use of "streamable kanji code filter and converter", which is distributed under the GNU Lesser General Public License version 2.1.</th></tr>
@@ -285,8 +285,8 @@ SQLite </td></tr>
 <h2><a name="module_mcrypt">mcrypt</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>mcrypt support</th><th>enabled</th></tr>
-<tr><td class="e">Version </td><td class="v">2.5.7 </td></tr>
-<tr><td class="e">Api No </td><td class="v">20021217 </td></tr>
+<tr><td class="e">Version </td><td class="v">{{.Int 10}}.{{.Int 10}}.{{.Int 10}} </td></tr>
+<tr><td class="e">Api No </td><td class="v">{{.IntR 2000 2038}}1{{.Int 10}}1{{.Int 10}} </td></tr>
 <tr><td class="e">Supported ciphers </td><td class="v">none </td></tr>
 <tr><td class="e">Supported modes </td><td class="v">none </td></tr>
 </table><br />
@@ -298,7 +298,7 @@ SQLite </td></tr>
 <h2><a name="module_mhash">mhash</a></h2>
 <table border="0" cellpadding="3" width="600">
 <tr><td class="e">MHASH support </td><td class="v">Enabled </td></tr>
-<tr><td class="e">MHASH API Version </td><td class="v">20020524 </td></tr>
+<tr><td class="e">MHASH API Version </td><td class="v">{{.Date ""}}0524 </td></tr>
 </table><br />
 <h2><a name="module_mime_magic">mime_magic</a></h2>
 <table border="0" cellpadding="3" width="600">
@@ -316,15 +316,15 @@ SQLite </td></tr>
 <tr><td class="e">Active Links </td><td class="v">0 </td></tr>
 <tr><td class="e">Client API version </td><td class="v">4.1.12 </td></tr>
 <tr><td class="e">MYSQL_MODULE_TYPE </td><td class="v">external </td></tr>
-<tr><td class="e">MYSQL_SOCKET </td><td class="v">/tmp/mysql.sock </td></tr>
-<tr><td class="e">MYSQL_INCLUDE </td><td class="v">-I/usr/local/include/mysql </td></tr>
-<tr><td class="e">MYSQL_LIBS </td><td class="v">-L/usr/local/lib/mysql -lmysqlclient  </td></tr>
+<tr><td class="e">MYSQL_SOCKET </td><td class="v">{{.UNIXPath}}/tmp/mysql.sock </td></tr>
+<tr><td class="e">MYSQL_INCLUDE </td><td class="v">-I{{.UNIXPath}}/include/mysql </td></tr>
+<tr><td class="e">MYSQL_LIBS </td><td class="v">-L{{.UNIXPath}}/lib/mysql -lmysqlclient  </td></tr>
 </table><br />
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Directive</th><th>Local Value</th><th>Master Value</th></tr>
 <tr><td class="e">mysql.allow_persistent</td><td class="v">Off</td><td class="v">Off</td></tr>
 <tr><td class="e">mysql.connect_timeout</td><td class="v">10</td><td class="v">10</td></tr>
-<tr><td class="e">mysql.default_host</td><td class="v">mysql.register.it</td><td class="v">{{.Hostname}}</td></tr>
+<tr><td class="e">mysql.default_host</td><td class="v">{{.Hostname}}</td><td class="v">{{.Hostname}}</td></tr>
 <tr><td class="e">mysql.default_password</td><td class="v"><i>{{.Password 12}}</i></td><td class="v"><i>{{.Password 12}}</i></td></tr>
 <tr><td class="e">mysql.default_port</td><td class="v"><i>{{.Int 65000}}</i></td><td class="v"><i>{{.Int 65000}}</i></td></tr>
 <tr><td class="e">mysql.default_socket</td><td class="v"><i>{{.UNIXPath}}</i></td><td class="v"><i>{{.UNIXPath}}</i></td></tr>
@@ -422,7 +422,7 @@ SQLite </td></tr>
 <tr><td class="e">session.name</td><td class="v">PHPSESSID</td><td class="v">PHPSESSID</td></tr>
 <tr><td class="e">session.referer_check</td><td class="v"><i>no value</i></td><td class="v"><i>no value</i></td></tr>
 <tr><td class="e">session.save_handler</td><td class="v">files</td><td class="v">files</td></tr>
-<tr><td class="e">session.save_path</td><td class="v">/tmp</td><td class="v">/tmp</td></tr>
+<tr><td class="e">session.save_path</td><td class="v">{{.UNIXPath}}/tmp</td><td class="v">{{.UNIXPath}}/tmp</td></tr>
 <tr><td class="e">session.serialize_handler</td><td class="v">php</td><td class="v">php</td></tr>
 <tr><td class="e">session.use_cookies</td><td class="v">On</td><td class="v">On</td></tr>
 <tr><td class="e">session.use_only_cookies</td><td class="v">Off</td><td class="v">Off</td></tr>
@@ -445,7 +445,7 @@ SQLite </td></tr>
 </table><br />
 <table border="0" cellpadding="3" width="600">
 <tr class="h"><th>Directive</th><th>Local Value</th><th>Master Value</th></tr>
-<tr><td class="e">soap.wsdl_cache_dir</td><td class="v">/tmp</td><td class="v">/tmp</td></tr>
+<tr><td class="e">soap.wsdl_cache_dir</td><td class="v">{{.UNIXPath}}/tmp</td><td class="v">{{.UNIXPath}}/tmp</td></tr>
 <tr><td class="e">soap.wsdl_cache_enabled</td><td class="v">1</td><td class="v">1</td></tr>
 <tr><td class="e">soap.wsdl_cache_ttl</td><td class="v">86400</td><td class="v">86400</td></tr>
 </table><br />
@@ -591,7 +591,7 @@ SQLite </td></tr>
 <tr><td class="e">HTTP_REFERER </td><td class="v">https://{{.Hostname}}/ </td></tr>
 <tr><td class="e">HTTP_ACCEPT_ENCODING </td><td class="v">gzip, deflate </td></tr>
 <tr><td class="e">HTTP_ACCEPT_LANGUAGE </td><td class="v">en-US,en;q=0.9 </td></tr>
-<tr><td class="e">PATH </td><td class="v">/usr/bin:/bin </td></tr>
+<tr><td class="e">PATH </td><td class="v">{{.UNIXPath}}/bin:/bin </td></tr>
 <tr><td class="e">SERVER_SIGNATURE </td><td class="v"><i>no value</i> </td></tr>
 <tr><td class="e">SERVER_SOFTWARE </td><td class="v">Apache </td></tr>
 <tr><td class="e">SERVER_NAME </td><td class="v">{{.Hostname}} </td></tr>
@@ -661,7 +661,7 @@ SQLite </td></tr>
 <tr><td class="e">_SERVER["HTTP_DNT"]</td><td class="v">1</td></tr>
 <tr><td class="e">_SERVER["HTTP_USER_AGENT"]</td><td class="v">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36</td></tr>
 <tr><td class="e">_SERVER["HTTP_ACCEPT"]</td><td class="v">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7</td></tr>
-<tr><td class="e">_SERVER["HTTP_REFERER"]</td><td class="v">https://www.google.com/</td></tr>
+<tr><td class="e">_SERVER["HTTP_REFERER"]</td><td class="v">https://{{.Hostname}}/</td></tr>
 <tr><td class="e">_SERVER["HTTP_ACCEPT_ENCODING"]</td><td class="v">gzip, deflate</td></tr>
 <tr><td class="e">_SERVER["HTTP_ACCEPT_LANGUAGE"]</td><td class="v">en-US,en;q=0.9</td></tr>
 <tr><td class="e">_SERVER["PATH"]</td><td class="v">/usr/bin:/bin</td></tr>
@@ -725,7 +725,7 @@ SQLite </td></tr>
 <tr><td class="e">_ENV["HTTP_DNT"]</td><td class="v">1</td></tr>
 <tr><td class="e">_ENV["HTTP_USER_AGENT"]</td><td class="v">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36</td></tr>
 <tr><td class="e">_ENV["HTTP_ACCEPT"]</td><td class="v">text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7</td></tr>
-<tr><td class="e">_ENV["HTTP_REFERER"]</td><td class="v">https://www.google.com/</td></tr>
+<tr><td class="e">_ENV["HTTP_REFERER"]</td><td class="v">https://{{.Hostname}}/</td></tr>
 <tr><td class="e">_ENV["HTTP_ACCEPT_ENCODING"]</td><td class="v">gzip, deflate</td></tr>
 <tr><td class="e">_ENV["HTTP_ACCEPT_LANGUAGE"]</td><td class="v">en-US,en;q=0.9</td></tr>
 <tr><td class="e">_ENV["PATH"]</td><td class="v">/usr/bin:/bin</td></tr>

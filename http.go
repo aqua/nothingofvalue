@@ -382,22 +382,66 @@ func (i phpInfoData) Password(n int) string     { return randPassword(n) }
 func (i phpInfoData) Hostname() string          { return randHostname() }
 func (i phpInfoData) IP() string                { return randIP() }
 func (i phpInfoData) UNIXPath() string          { return randUNIXPath() }
+func (i phpInfoData) TimeHMS() string {
+	return fmt.Sprintf("%02d:%02d:%02d", rand.IntN(24), rand.IntN(60), rand.IntN(60))
+}
+
+func (i phpInfoData) Date(sep string) string {
+	return fmt.Sprintf("%04d%s%02d%s%02d", 2000+rand.IntN(39), sep, 1+rand.IntN(12), sep, 1+rand.IntN(31))
+}
 
 func (i phpInfoData) AutoconfCommand() string {
-	cmd := []string{"./configure"}
-	for i := 10 + rand.IntN(40); i > 0; i-- {
+	cmd := []string{
+		"./configure",
+		"--enable-freetype",
+		"--enable-libxml",
+		"--enable-reflection",
+		"--enable-exif",
+		"--enable-sendmail",
+		"--enable-mysql",
+		"--enable-pgsql",
+		"--enable-xmlreader",
+		"--enable-xmlwriter",
+		"--enable-gd",
+		"--enable-php-streams",
+		"--enable-wddx",
+		"--with-kerberos",
+		"--with-mime-magic=" + randUNIXPath(),
+		"--enable-magic-quotes",
+		"--enable-sqlite",
+		"--enable-sqlite3",
+		"--enable-xml",
+		"--enable-calendar",
+		"--enable-sybase",
+		"--enable-unixODBC",
+		"--enable-gdbm",
+	}
+	for i := 30 + rand.IntN(60); i > 0; i-- {
 		thing := randAlpha(2 + rand.IntN(20))
-		with := "--with"
 		if rand.IntN(2) == 0 {
-			with = "--without"
-		} else if rand.IntN(4) == 0 {
-			with = with + "=" + randUNIXPath()
+			thing = thing + "-" + randAlpha(2+rand.IntN(20))
 		}
-		cmd = append(cmd, with+"-"+thing)
+		with := ""
+		n := rand.IntN(100)
+		switch {
+		case n < 10:
+			with = "--without=" + thing
+		case n < 20:
+			with = "--enable-" + thing
+		case n < 50:
+			with = "--with-" + thing + "=" + randUNIXPath()
+		default:
+			with = "--with-" + thing
+		}
+		cmd = append(cmd, with)
 	}
 	for i, v := range cmd {
 		cmd[i] = "'" + v + "'"
 	}
+	rand.Shuffle(len(cmd)-1, func(i, j int) {
+		cmd[i+1], cmd[j+1] = cmd[j+1], cmd[i+1]
+	})
+
 	return strings.Join(cmd, " ")
 }
 
