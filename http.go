@@ -27,7 +27,9 @@ func setHSTS(w http.ResponseWriter) {
 
 //go:embed content/index.html content/index.html.gz
 //go:embed content/index.html.br content/index.html.zstd
-//go:embed content/muchyaml.yaml content/xmlrpc.xml content/wlwmanifest.xml
+//go:embed content/muchyaml.yaml content/wlwmanifest.xml
+//go:embed content/xmlrpc.xml content/xmlrpc.xml.gz content/xmlrpc.xml.br
+//go:embed content/xmlrpc.xml.zstd
 //go:embed content/1g.br content/10g.br content/100g.br
 //go:embed content/1g.zstd content/10g.zstd
 //go:embed content/tlds.txt
@@ -549,6 +551,7 @@ var nodeDotEnvPath = regexp.MustCompile(
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
 var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$`)
+var xmlRPCPath = regexp.MustCompile(`(?i).*/xml.?rpc(\.php(.\w+)?)?$`)
 var springActuatorPath = regexp.MustCompile(`(?i).*/actuator/\w+$`)
 
 func supportsEncoding(r *http.Request, algo string) bool {
@@ -570,12 +573,14 @@ func (h *Handler) serveContentEncodedFallback(w http.ResponseWriter, r *http.Req
 		h.serveEncodedFile(w, "br", mimeType, path+".br")
 	case supportsEncoding(r, "zstd"):
 		h.serveEncodedFile(w, "zstd", mimeType, path+".zstd")
-	case supportsEncoding(r, "gzip"):
+	case supportsEncoding(r, "gzip") || supportsEncoding(r, "gz"):
 		h.serveEncodedFile(w, "gzip", mimeType, path+".gz")
-	case fallback != "":
-		h.serveFile(w, mimeType, fallback)
 	default:
-		// serve an empty response
+		if fallback != "" {
+			h.serveFile(w, mimeType, fallback)
+		} else {
+			// serve an empty response
+		}
 	}
 }
 
@@ -652,6 +657,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(r.URL.Path, ".zip"):
 		h.serveFile(w, "application/zip", "content/overlapping.zip")
 
+	// JSON actually has a pretty limited attack surface, supporting none of
+	// the usual cost-amplification tricks of markups like XML or YAML.
+	// If the client supports content encoding we can pack a fair degree of
+	// nesting and repetition to make the parse costly, but without compression
+	// we fall back to an empty response.
 	case strings.HasSuffix(r.URL.Path, ".json"):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 	case (strings.HasSuffix(r.URL.Path, "/_catalog") ||
@@ -659,10 +669,18 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		strings.Contains(r.URL.Path, "/wp-json/")):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 
-	case strings.Contains(r.URL.Path, "xmlrpc.php"):
-		h.serveFile(w, "text/xml", "content/xmlrpc.xml")
+	case xmlRPCPath.MatchString(r.URL.Path):
+		// XMLRPC supports arbitrary response param structure nesting, but most
+		// parsers do impose a maximum depth, so this one balances a 1000-deep
+		// struct nesting with a large iteration count of the nested struct,
+		// using a limited degree of million-laughs entity expansion for struct
+		// keys.  The exact degree of repetition varies with the compression
+		// supported by the client; gzip at 1000x1000 is 217kB, zstd manages
+		// 1000x10000 in 70kB, while brotli can go 1000x100000 in only 5.4kB.
+		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
+	// generic XML response; for now reuse the XMLRPC one.
 	case strings.HasSuffix(r.URL.Path, ".xml"):
-		h.serveFile(w, "text/xml", "content/wlwmanifest.xml")
+		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
 
 	// gzip can only do 1024:1, but if the client will also transport encode,
 	// we can offer 1024^2:1.
