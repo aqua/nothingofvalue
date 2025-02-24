@@ -31,7 +31,7 @@ func main() {
 		for j := 0; j < *depth; j++ {
 			fmt.Print(`<struct><member><name>&rpc1;</name><value>`)
 		}
-		fmt.Print(`<string>&rpc2;</string>`)
+		fmt.Print(`<string>&rpc1;</string>`)
 		for j := 0; j < *depth; j++ {
 			fmt.Print(`</value></member></struct>`)
 		}
