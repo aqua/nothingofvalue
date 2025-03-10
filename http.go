@@ -546,8 +546,7 @@ func (h *Handler) serveRandom400(w http.ResponseWriter) {
 
 var indexOrSimilar = regexp.MustCompile(`(?i)^/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
-var nodeDotEnvPath = regexp.MustCompile(
-	`(?i).*/\.env(.bac?k(up)?|.old|.save|.dev(el(opment)?)?|.prod(uction)?)?$`)
+var nodeDotEnvPath = regexp.MustCompile(`(?i).*/\.env(\.\w+)*$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
 var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$`)

@@ -41,6 +41,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/.ftpconfig", 200, re(`"user": *"`)},
 		{"/.aws/credentials", 200, re(`aws_access_key_id=A`)},
 		{"/.env", 200, re(`API_KEY=.+`)},
+		{"/.env.production.foo", 200, re(`API_KEY=.+`)},
 		{"/php.ini", 200, re(`default_user=.+`)},
 		{"/phpinfo.php", 200, re(`href="https?://www.php.net/`)},
 		{"/sendgrid.env", 200, re(`SENDGRID_API_KEY=SG\..+`)},
