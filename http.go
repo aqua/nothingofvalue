@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	rand "math/rand/v2"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
@@ -17,6 +18,8 @@ import (
 	"sync/atomic"
 	"text/template"
 	"time"
+
+	"github.com/aqua/nothingofvalue/reporter"
 )
 
 var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")))
@@ -51,6 +54,10 @@ type Handler struct {
 
 	// How long to spend issuing a slow response.
 	SlowResponseDeadline time.Duration
+
+	reporterSiteToken        string
+	reporterSiteTokenHandler http.HandlerFunc
+	reporter                 reporter.Reporter
 
 	templateInsert sync.Mutex
 	templates      sync.Map
@@ -183,6 +190,28 @@ var sampleMimeTypes = []string{
 	"image/jpeg",
 	"text/h323",
 	"video/x-matroska",
+}
+
+func loadMimeFile(filename string) ([]string, error) {
+	types := make([]string, 0, 2000)
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) <= 1 || fields[0][0] == '#' {
+			continue
+		}
+		types = append(types, fields[0])
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return types, nil
 }
 
 func randMimeType() string {
@@ -584,7 +613,7 @@ func (h *Handler) serveContentEncodedFallback(w http.ResponseWriter, r *http.Req
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("path=%s proto=%s accept-encoding=%s", r.URL.Path, r.Proto, r.Header.Get("Accept-Encoding"))
+	log.Printf("path=%s proto=%s accept-encoding=%s remote-addr=%s", r.URL.Path, r.Proto, r.Header.Get("Accept-Encoding"), r.RemoteAddr)
 	d100 := rand.IntN(100)
 	switch {
 	// The two real URLs here
@@ -594,6 +623,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveSitemap(w, r)
 	case indexOrSimilar.MatchString(r.URL.Path):
 		h.serveContentEncodedFallback(w, r, "text/html", "content/index.html", "content/index.html")
+
+	case h.reporterSiteToken != "" && r.URL.Path == h.reporterSiteToken:
+		h.reporterSiteTokenHandler(w, r)
 
 	// Requests here generally mean no harm and dig no deeper.
 	case strings.HasPrefix(r.URL.Path, "/.well-known"):
@@ -619,6 +651,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Secondhand git credentials, surely valuable to someone
 	case strings.HasSuffix(r.URL.Path, "/.git/config"):
 		h.serveGitConfig(w)
+		h.report(r, ".git/config credential scraping", []string{"BadWebBot"})
 	case strings.HasSuffix(r.URL.Path, "ftp-sync.json") || strings.HasSuffix(r.URL.Path, "/sftp.json"):
 		h.serveVSCodeFTPSync(w)
 	case strings.HasSuffix(r.URL.Path, "sftp-config.json"):
@@ -710,6 +743,35 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func parseIP(in string) (net.IP, error) {
+	if ip := net.ParseIP(in); ip != nil {
+		return ip, nil
+	}
+	log.Printf("unparseable IP: %s", in)
+	return nil, fmt.Errorf("unparseable IP: %s", in)
+}
+
+func (h *Handler) report(r *http.Request, comment string, categories []string) error {
+	if h.reporter == nil {
+		return nil
+	}
+	ip, err := parseIP(r.RemoteAddr)
+	if err != nil {
+		return err
+	}
+	return h.reporter.Report(&reporter.Report{
+		IP:         ip,
+		Timestamp:  time.Now(),
+		Comment:    comment,
+		Categories: categories,
+	})
+}
+
+func (h *Handler) AddReporter(r reporter.Reporter) {
+	h.reporter = r
+	h.reporterSiteToken, h.reporterSiteTokenHandler = r.SiteVerificationHandler()
+}
+
 func NewHandler() *Handler {
 	mimeLoading.Do(func() {
 		osMimeTypes, _ = loadMimeFile("/etc/mime.types")
@@ -718,26 +780,4 @@ func NewHandler() *Handler {
 		SlowResponseLimit:    10,
 		SlowResponseDeadline: 29 * time.Second,
 	}
-}
-
-func loadMimeFile(filename string) ([]string, error) {
-	types := make([]string, 0, 2000)
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		fields := strings.Fields(scanner.Text())
-		if len(fields) <= 1 || fields[0][0] == '#' {
-			continue
-		}
-		types = append(types, fields[0])
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-	return types, nil
 }

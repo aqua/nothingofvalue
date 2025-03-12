@@ -1,0 +1,4 @@
+github.com/allegro/bigcache/v3 v3.1.0 h1:H2Vp8VOvxcrB91o86fUSVJFqeuz8kpyyB02eH3bSzwk=
+github.com/allegro/bigcache/v3 v3.1.0/go.mod h1:aPyh7jEvrog9zAwx5N7+JUQX5dZTSGpxF1LAR4dr35I=
+rievo.dev/sst/go-abuseipdb v0.0.0-20241206162029-16e195b8af36 h1:ByrnElh14gAksh/pWp0FRPiWVluI7dEV7wV3D7rwk0c=
+rievo.dev/sst/go-abuseipdb v0.0.0-20241206162029-16e195b8af36/go.mod h1:0KS4uQnMm/kbFtKiV5qpWuLncf1AGTlEC+1p+xblTak=
