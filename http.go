@@ -654,22 +654,30 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.report(r, ".git/config credential scraping", []string{"BadWebBot"})
 	case strings.HasSuffix(r.URL.Path, "ftp-sync.json") || strings.HasSuffix(r.URL.Path, "/sftp.json"):
 		h.serveVSCodeFTPSync(w)
+		h.report(r, "VSCode credential scraping", []string{"BadWebBot"})
 	case strings.HasSuffix(r.URL.Path, "sftp-config.json"):
 		h.serveSublimeCodeSFTPConfig(w)
 	case strings.HasSuffix(r.URL.Path, "ftp-config.json"):
 		h.serveNodeFTPConfig(w)
+		h.report(r, "Node.js FTP config file credential scraping", []string{"BadWebBot"})
 	case strings.HasSuffix(r.URL.Path, ".ftpconfig"):
 		h.serveAtomFTPConfig(w)
+		h.report(r, "Atom FTP config credential scraping", []string{"BadWebBot"})
 	case strings.HasSuffix(r.URL.Path, "sendgrid.env"):
 		h.serveSendgridConfig(w)
+		h.report(r, "Sendgrid.env credential scraping", []string{"BadWebBot"})
 	case awsCredentialPath.MatchString(r.URL.Path):
 		h.serveAWSCLICredentials(w)
+		h.report(r, "AWS credential scraping", []string{"BadWebBot"})
 	case nodeDotEnvPath.MatchString(r.URL.Path):
 		h.serveNodeDotEnv(w)
+		h.report(r, "Node.js .env file credential scraping", []string{"BadWebBot"})
 	case phpIniPath.MatchString(r.URL.Path):
 		h.servePHPIni(w)
+		h.report(r, "PHP.ini file credential scraping", []string{"BadWebBot"})
 	case phpInfoPath.MatchString(r.URL.Path):
 		h.servePHPInfo(w)
+		h.report(r, "phpinfo() credential scraping", []string{"BadWebBot"})
 
 	// While PNG, much like gzip, has a maximum compression ratio of about
 	// 1024:1, it re-compresses very well.  Thanks to David Fifield
@@ -700,6 +708,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		springActuatorPath.MatchString(r.URL.Path) ||
 		strings.Contains(r.URL.Path, "/wp-json/")):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
+		h.report(r, "AJAX API vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
 	case xmlRPCPath.MatchString(r.URL.Path):
 		// XMLRPC supports arbitrary response param structure nesting, but most
@@ -710,6 +719,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// supported by the client; gzip at 1000x1000 is 217kB, zstd manages
 		// 1000x10000 in 70kB, while brotli can go 1000x100000 in only 5.4kB.
 		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
+		h.report(r, "XMLRPC vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 	// generic XML response; for now reuse the XMLRPC one.
 	case strings.HasSuffix(r.URL.Path, ".xml"):
 		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
@@ -743,19 +753,23 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func parseIP(in string) (net.IP, error) {
-	if ip := net.ParseIP(in); ip != nil {
-		return ip, nil
+func parseRemoteAddr(in string) (net.IP, error) {
+	if host, _, err := net.SplitHostPort(in); err == nil {
+		if ip := net.ParseIP(host); ip != nil {
+			return ip, nil
+		}
+		return nil, err
+	} else {
+		log.Printf("unparseable IP %q: %v", in, err)
+		return nil, fmt.Errorf("unparseable IP: %s: %v", in, err)
 	}
-	log.Printf("unparseable IP: %s", in)
-	return nil, fmt.Errorf("unparseable IP: %s", in)
 }
 
 func (h *Handler) report(r *http.Request, comment string, categories []string) error {
 	if h.reporter == nil {
 		return nil
 	}
-	ip, err := parseIP(r.RemoteAddr)
+	ip, err := parseRemoteAddr(r.RemoteAddr)
 	if err != nil {
 		return err
 	}
