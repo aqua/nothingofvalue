@@ -614,7 +614,7 @@ func (h *Handler) serveContentEncodedFallback(w http.ResponseWriter, r *http.Req
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("path=%s proto=%s accept-encoding=%s remote-addr=%s headers=%v", r.URL.Path, r.Proto, r.Header.Get("Accept-Encoding"), r.RemoteAddr, r.Header)
+	log.Printf("path=%s proto=%s accept-encoding=%s remote-addr=%s", r.URL.Path, r.Proto, r.Header.Get("Accept-Encoding"), r.RemoteAddr)
 	switch {
 	// The two real URLs here
 	case r.URL.Path == "/robots.txt":
