@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"embed"
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +23,8 @@ import (
 	"github.com/aqua/nothingofvalue/reporter"
 	"github.com/muhlemmer/httpforwarded"
 )
+
+var trustForwardedHeaders = flag.Bool("trust-forwarded-headers", false, "Trust Forwarded: HTTP headers, if present")
 
 var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")))
 
@@ -771,16 +774,18 @@ func (h *Handler) serveGenericUnhelpfulness(w http.ResponseWriter, r *http.Reque
 }
 
 func extractRemoteAddr(r *http.Request) (net.IP, error) {
-	if fh, err := httpforwarded.ParseFromRequest(r); err == nil && fh != nil {
-		if f, ok := fh["for"]; ok && len(f) > 0 {
-			log.Printf("f=%s", f[0])
-			if strings.HasPrefix(f[0], "[") && strings.HasSuffix(f[0], "]") {
-				f[0] = f[0][1 : len(f[0])-1]
-			}
-			if ip := net.ParseIP(f[0]); ip != nil {
-				return ip, nil
-			} else if ip, _, err := net.SplitHostPort(f[0]); err == nil {
-				return net.ParseIP(ip), nil
+	if *trustForwardedHeaders {
+		if fh, err := httpforwarded.ParseFromRequest(r); err == nil && fh != nil {
+			if f, ok := fh["for"]; ok && len(f) > 0 {
+				log.Printf("f=%s", f[0])
+				if strings.HasPrefix(f[0], "[") && strings.HasSuffix(f[0], "]") {
+					f[0] = f[0][1 : len(f[0])-1]
+				}
+				if ip := net.ParseIP(f[0]); ip != nil {
+					return ip, nil
+				} else if ip, _, err := net.SplitHostPort(f[0]); err == nil {
+					return net.ParseIP(ip), nil
+				}
 			}
 		}
 	}

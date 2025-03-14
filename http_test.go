@@ -67,6 +67,9 @@ func TestFixedResponses(t *testing.T) {
 }
 
 func TestParseRemoteAddr(t *testing.T) {
+	otfh := *trustForwardedHeaders
+	*trustForwardedHeaders = true
+	defer func() { *trustForwardedHeaders = otfh }()
 	cases := []struct {
 		remoteAddr string
 		forwarded  string
