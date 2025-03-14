@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/aqua/nothingofvalue/reporter"
+	"github.com/muhlemmer/httpforwarded"
 )
 
 var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")))
@@ -613,8 +614,7 @@ func (h *Handler) serveContentEncodedFallback(w http.ResponseWriter, r *http.Req
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("path=%s proto=%s accept-encoding=%s remote-addr=%s", r.URL.Path, r.Proto, r.Header.Get("Accept-Encoding"), r.RemoteAddr)
-	d100 := rand.IntN(100)
+	log.Printf("path=%s proto=%s accept-encoding=%s remote-addr=%s headers=%v", r.URL.Path, r.Proto, r.Header.Get("Accept-Encoding"), r.RemoteAddr, r.Header)
 	switch {
 	// The two real URLs here
 	case r.URL.Path == "/robots.txt":
@@ -720,6 +720,23 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// 1000x10000 in 70kB, while brotli can go 1000x100000 in only 5.4kB.
 		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
 		h.report(r, "XMLRPC vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
+
+	case strings.Contains(r.URL.Path, "/wp-login") ||
+		strings.Contains(r.URL.Path, "/wp-includes"):
+		h.serveGenericUnhelpfulness(w, r)
+		h.report(r, "Wordpress probing", []string{"BadWebBot", "WebAppAttack"})
+	case strings.HasSuffix(r.URL.Path, ".php"):
+		h.serveGenericUnhelpfulness(w, r)
+		h.report(r, "PHP probing", []string{"BadWebBot", "WebAppAttack"})
+
+	default:
+		h.serveGenericUnhelpfulness(w, r)
+	}
+}
+
+func (h *Handler) serveGenericUnhelpfulness(w http.ResponseWriter, r *http.Request) {
+	d100 := rand.IntN(100)
+	switch {
 	// generic XML response; for now reuse the XMLRPC one.
 	case strings.HasSuffix(r.URL.Path, ".xml"):
 		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
@@ -753,15 +770,28 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func parseRemoteAddr(in string) (net.IP, error) {
-	if host, _, err := net.SplitHostPort(in); err == nil {
+func extractRemoteAddr(r *http.Request) (net.IP, error) {
+	if fh, err := httpforwarded.ParseFromRequest(r); err == nil && fh != nil {
+		if f, ok := fh["for"]; ok && len(f) > 0 {
+			log.Printf("f=%s", f[0])
+			if strings.HasPrefix(f[0], "[") && strings.HasSuffix(f[0], "]") {
+				f[0] = f[0][1 : len(f[0])-1]
+			}
+			if ip := net.ParseIP(f[0]); ip != nil {
+				return ip, nil
+			} else if ip, _, err := net.SplitHostPort(f[0]); err == nil {
+				return net.ParseIP(ip), nil
+			}
+		}
+	}
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 		if ip := net.ParseIP(host); ip != nil {
 			return ip, nil
 		}
 		return nil, err
 	} else {
-		log.Printf("unparseable IP %q: %v", in, err)
-		return nil, fmt.Errorf("unparseable IP: %s: %v", in, err)
+		log.Printf("unparseable IP %q: %v", r.RemoteAddr, err)
+		return nil, fmt.Errorf("unparseable IP: %s: %v", r.RemoteAddr, err)
 	}
 }
 
@@ -769,10 +799,11 @@ func (h *Handler) report(r *http.Request, comment string, categories []string) e
 	if h.reporter == nil {
 		return nil
 	}
-	ip, err := parseRemoteAddr(r.RemoteAddr)
+	ip, err := extractRemoteAddr(r)
 	if err != nil {
 		return err
 	}
+	comment += fmt.Sprintf("; %s %s", r.Method, r.URL.Path)
 	return h.reporter.Report(&reporter.Report{
 		IP:         ip,
 		Timestamp:  time.Now(),

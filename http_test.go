@@ -3,6 +3,8 @@ package nothingofvalue
 import (
 	"bufio"
 	"io"
+	"net"
+	"net/http"
 	"net/http/httptest"
 	"regexp"
 	"testing"
@@ -66,18 +68,30 @@ func TestFixedResponses(t *testing.T) {
 
 func TestParseRemoteAddr(t *testing.T) {
 	cases := []struct {
-		in   string
-		fail bool
+		remoteAddr string
+		forwarded  string
+		xforwarded string
+		want       net.IP
+		fail       bool
 	}{
-		{"127.0.0.1:1234", false},
-		{"0.0.0.1:1234", false},
-		{"[ff::]:1234", false},
-		{"[::1]:1234", false},
-		{"[::1%lo0]:1234", true}, // not sure if this needs handling
+		{"127.0.0.1:1234", "", "", net.IPv4(127, 0, 0, 1), false},
+		{"0.0.0.1:1234", "", "", net.IPv4(0, 0, 0, 1), false},
+		{"[ff::]:1234", "", "", net.ParseIP("ff::"), false},
+		{"[::1]:1234", "", "", net.ParseIP("::1"), false},
+		{"[::1%lo0]:1234", "", "", net.ParseIP("[::1]"), true}, // not sure if this needs handling
+		{"127.0.0.2:1234", "for=192.0.2.1; proto=http", "", net.IPv4(192, 0, 2, 1), false},
+		{"127.0.0.2:1234", "for=\"[2001:5a8::68]\";proto=https", "", net.ParseIP("2001:5a8::68"), false},
+		{"127.0.0.2:1234", "for=\"[2001:5a8::68]:1234\";proto=https", "", net.ParseIP("2001:5a8::68"), false},
 	}
-	for _, c := range cases {
-		if _, err := parseRemoteAddr(c.in); err != nil && !c.fail {
-			t.Errorf("parse error on %q: %v", c.in, err)
+	for i, c := range cases {
+		req := &http.Request{RemoteAddr: c.remoteAddr, Header: http.Header{}}
+		if c.forwarded != "" {
+			req.Header.Add("Forwarded", c.forwarded)
+		}
+		if got, err := extractRemoteAddr(req); err != nil && !c.fail {
+			t.Errorf("case %d: parse error on %v: %v", i, req, err)
+		} else if !got.Equal(c.want) {
+			t.Errorf("case %d: want %s, got %s", i, c.want, got)
 		}
 	}
 }
