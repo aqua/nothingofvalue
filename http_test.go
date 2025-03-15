@@ -39,6 +39,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/wlwmanifest.xml", 200, re("<?xml")},
 		{"/xmlrpc.php", 200, re("<param>")},
 		{"/.git/config", 200, re(`\[credential `)},
+		{"/.git/logs/HEAD", 200, re(`commit: `)},
 		{"/.ftp-sync.json", 200, re(`remotePath: *".*"`)},
 		{"/sftp-config.json", 200, re(`"user": *"`)},
 		{"/ftp-config.json", 200, re(`"user": *"`)},
@@ -106,6 +107,7 @@ func TestReporting(t *testing.T) {
 	}{
 		{"/", nil},
 		{"/.git/config", re(`credential scraping`)},
+		{"/.git/logs/HEAD", re(`git history scraping`)},
 		{"/.env", re(`credential scraping`)},
 		{"/.AWS/credentials", re(`credential scraping`)},
 		{"/wp-json/abuseme", re(`vulnerability prober`)},

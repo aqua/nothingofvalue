@@ -120,6 +120,7 @@ var alphanumerics = []byte("abcdefghijklmnopqrstuvwyz0123456789")
 var upperAlphaNumerics = []byte("ABCDEFGHIJKLMNOPQRSTUVWYZ0123456789")
 var alphaMixedCaseNumerics = []byte("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789")
 var passwordChars = []byte("abcdefghijklmnopqrstuvwyzABCDEFGHIJKLMNOPQRSTUVWYZ0123456789;:,./?!@#$%^*()~`[]{}|")
+var lowerHex = []byte("0123456789abcdef")
 var upperHex = []byte("0123456789ABCDEF")
 
 func randTLD() string {
@@ -169,6 +170,27 @@ func randPort() int {
 	return 20 + rand.IntN(50000)
 }
 
+func randEmail() string {
+	return randAlphaNumeric(2+rand.IntN(12)) + "@" + randHostname()
+}
+
+func randTZOffset() string {
+	offset := -12 + rand.IntN(23)
+	if offset < 0 {
+		return fmt.Sprintf("%03d00", offset)
+	} else {
+		return fmt.Sprintf("%02d00", offset)
+	}
+}
+
+func randHumanName() string {
+	names := []string{}
+	for i := 2 + rand.IntN(3); i > 0; i-- {
+		names = append(names, randUpperAlpha(1)+randAlpha(2+rand.IntN(15)))
+	}
+	return strings.Join(names, " ")
+}
+
 func randString(alphabet []byte, n int) string {
 	o := make([]byte, n)
 	for i := 0; i < n; i++ {
@@ -177,11 +199,22 @@ func randString(alphabet []byte, n int) string {
 	return string(o)
 }
 
+func randTextish(n int) string {
+	words := []string{}
+	for i := 0; i < n; {
+		w := randAlpha(1 + rand.IntN(10))
+		i += len(w) + 1
+		words = append(words, w)
+	}
+	return strings.Join(words, " ")
+}
+
 func randAlpha(n int) string                 { return randString(alphabet, n) }
 func randUpperAlpha(n int) string            { return randString(upperAlphabet, n) }
 func randAlphaNumeric(n int) string          { return randString(alphanumerics, n) }
 func randUpperAlphaNumeric(n int) string     { return randString(upperAlphaNumerics, n) }
 func randAlphaMixedCaseNumeric(n int) string { return randString(alphaMixedCaseNumerics, n) }
+func randLowerHex(n int) string              { return randString(lowerHex, n) }
 func randUpperHex(n int) string              { return randString(upperHex, n) }
 func randPassword(n int) string              { return randString(passwordChars, n) }
 
@@ -277,6 +310,18 @@ func (h *Handler) serveGitConfig(w http.ResponseWriter) {
 			randAlphaNumeric(20),
 			randAlpha(12),
 			randAlphaNumeric(12))
+	}
+}
+
+func (h *Handler) serveGitLogsHEAD(w http.ResponseWriter) {
+	setHSTS(w)
+	ts := time.Now().Add(time.Duration(-rand.IntN(1000000000)) * time.Second)
+	cl := "0000000000000000000000000000000000000000"
+	for i := rand.IntN(100); i > 0; i-- {
+		ncl := randLowerHex(40)
+		fmt.Fprintf(w, "%s %s %s <%s> %d %s commit: %s\n", cl, ncl, randHumanName(), randEmail(), ts.Unix(), randTZOffset(), randTextish(40+rand.IntN(20)))
+		cl = ncl
+		ts = ts.Add(time.Duration(rand.IntN(1000000)) * time.Second)
 	}
 }
 
@@ -656,6 +701,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(r.URL.Path, "/.git/config"):
 		h.serveGitConfig(w)
 		h.report(r, ".git/config credential scraping", []string{"BadWebBot"})
+	case strings.HasSuffix(strings.ToLower(r.URL.Path), "/.git/logs/head"):
+		h.serveGitLogsHEAD(w)
+		h.report(r, "git history scraping", []string{"BadWebBot"})
 	case strings.HasSuffix(r.URL.Path, "ftp-sync.json") || strings.HasSuffix(r.URL.Path, "/sftp.json"):
 		h.serveVSCodeFTPSync(w)
 		h.report(r, "VSCode credential scraping", []string{"BadWebBot"})
@@ -778,7 +826,6 @@ func extractRemoteAddr(r *http.Request) (net.IP, error) {
 	if *trustForwardedHeaders {
 		if fh, err := httpforwarded.ParseFromRequest(r); err == nil && fh != nil {
 			if f, ok := fh["for"]; ok && len(f) > 0 {
-				log.Printf("f=%s", f[0])
 				if strings.HasPrefix(f[0], "[") && strings.HasSuffix(f[0], "]") {
 					f[0] = f[0][1 : len(f[0])-1]
 				}
