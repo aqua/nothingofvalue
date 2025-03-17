@@ -116,7 +116,7 @@ func TestReporting(t *testing.T) {
 		{"/.env", re(`credential scraping`)},
 		{"/.AWS/credentials", re(`credential scraping`)},
 		{"/wp-json/abuseme", re(`vulnerability prober`)},
-		{"/wp-json/abuseme", re(`vulnerability prober`)},
+		{"/pms?module=logging", re(`CVE-2024-20767`)},
 	}
 	ch := make(chan string, 1)
 	h := NewHandler()

@@ -719,7 +719,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(r.URL.Path, "sendgrid.env"):
 		h.serveSendgridConfig(w)
 		h.report(r, "Sendgrid.env credential scraping", []string{"BadWebBot"})
-	case awsCredentialPath.MatchString(r.URL.Path):
+	case awsCredentialPath.MatchString(r.URL.Path) ||
+		awsCredentialPath.MatchString(r.URL.RawQuery):
 		h.serveAWSCLICredentials(w)
 		h.report(r, "AWS credential scraping", []string{"BadWebBot"})
 	case nodeDotEnvPath.MatchString(r.URL.Path):
@@ -733,6 +734,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.report(r, "phpinfo() credential scraping", []string{"BadWebBot"})
 	case strings.Contains(r.URL.RawQuery, "action=catchimage"):
 		h.report(r, "hansunCMS CVE-2023-2245 vulnerability prober", []string{"BadWebBot", "WebAppAttack", "Hacking"})
+		h.serveGenericUnhelpfulness(w, r)
+	case strings.Contains(r.URL.Path, "/pms") && strings.Contains(r.URL.RawQuery, "module=logging"):
+		h.report(r, "ColdFusion CVE-2024-20767 vulnerability prober", []string{"BadWebBot", "WebAppAttack", "Hacking"})
 		h.serveGenericUnhelpfulness(w, r)
 
 	// While PNG, much like gzip, has a maximum compression ratio of about
