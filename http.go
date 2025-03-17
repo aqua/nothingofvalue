@@ -25,6 +25,7 @@ import (
 )
 
 var trustForwardedHeaders = flag.Bool("trust-forwarded-headers", false, "Trust Forwarded: HTTP headers, if present")
+var reportSuppressionToken = flag.String("report-suppression-token", "", "If set, no request with this token in the 'query' section (after the ? in the URL) of a request will be reported as hostile (for manual testing).")
 
 var cheapRand = rand.NewChaCha8([32]byte([]byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456")))
 
@@ -854,6 +855,10 @@ func extractRemoteAddr(r *http.Request) (net.IP, error) {
 
 func (h *Handler) report(r *http.Request, comment string, categories []string) error {
 	if h.reporter == nil {
+		return nil
+	}
+	if *reportSuppressionToken != "" && strings.Contains(r.URL.RawQuery, *reportSuppressionToken) {
+		log.Printf("URL query string contains magic suppression token, not reporting")
 		return nil
 	}
 	ip, err := extractRemoteAddr(r)

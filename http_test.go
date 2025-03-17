@@ -102,15 +102,20 @@ func TestParseRemoteAddr(t *testing.T) {
 }
 
 func TestReporting(t *testing.T) {
+	orst := *reportSuppressionToken
+	*reportSuppressionToken = "unittesting"
+	defer func() { *reportSuppressionToken = orst }()
 	cases := []struct {
 		path  string
 		match *regexp.Regexp
 	}{
 		{"/", nil},
 		{"/.git/config", re(`credential scraping`)},
+		{"/.git/config?unittesting", nil},
 		{"/.git/logs/HEAD", re(`git history scraping`)},
 		{"/.env", re(`credential scraping`)},
 		{"/.AWS/credentials", re(`credential scraping`)},
+		{"/wp-json/abuseme", re(`vulnerability prober`)},
 		{"/wp-json/abuseme", re(`vulnerability prober`)},
 	}
 	ch := make(chan string, 1)
