@@ -627,7 +627,7 @@ var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(`(?i).*/\.env(\.\w+)*$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
-var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$`)
+var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$|param.*phpinfo\(\)`)
 var xmlRPCPath = regexp.MustCompile(`(?i).*/xml.?rpc(\.php(.\w+)?)?$`)
 var springActuatorPath = regexp.MustCompile(`(?i).*/actuator/\w+$`)
 
@@ -730,6 +730,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case phpInfoPath.MatchString(r.URL.Path):
 		h.servePHPInfo(w)
 		h.report(r, "phpinfo() credential scraping", []string{"BadWebBot"})
+	case strings.Contains(r.URL.RawQuery, "action=catchimage"):
+		h.report(r, "hansunCMS CVE-2023-2245 vulnerability prober", []string{"BadWebBot", "WebAppAttack", "Hacking"})
+		h.serveGenericUnhelpfulness(w, r)
 
 	// While PNG, much like gzip, has a maximum compression ratio of about
 	// 1024:1, it re-compresses very well.  Thanks to David Fifield

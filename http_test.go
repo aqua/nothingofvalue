@@ -49,6 +49,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/.env.production.foo", 200, re(`API_KEY=.+`)},
 		{"/php.ini", 200, re(`default_user=.+`)},
 		{"/phpinfo.php", 200, re(`href="https?://www.php.net/`)},
+		{"/index.php/module/action/param1/$%7B@phpinfo()%7D", 200, re(`href="https?://www.php.net/`)},
 		{"/sendgrid.env", 200, re(`SENDGRID_API_KEY=SG\..+`)},
 	}
 	h := NewHandler()
