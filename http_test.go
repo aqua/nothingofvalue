@@ -53,6 +53,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/sendgrid.env", 200, re(`SENDGRID_API_KEY=SG\..+`)},
 	}
 	h := NewHandler()
+	h.SlowResponseDeadline = 0
 	for _, c := range cases {
 		req := httptest.NewRequest("GET", c.path, nil)
 		w := httptest.NewRecorder()
@@ -116,10 +117,15 @@ func TestReporting(t *testing.T) {
 		{"/.env", re(`credential scraping`)},
 		{"/.AWS/credentials", re(`credential scraping`)},
 		{"/wp-json/abuseme", re(`vulnerability prober`)},
+		{"/wp-includes/abuseme", re(`Wordpress probing`)},
+		{"/wp-login", re(`Wordpress probing`)},
+		{"/wp", re(`Wordpress probing`)},
+		{"/wordpress", re(`Wordpress probing`)},
 		{"/pms?module=logging", re(`CVE-2024-20767`)},
 	}
 	ch := make(chan string, 1)
 	h := NewHandler()
+	h.SlowResponseDeadline = 0
 	h.AddReporter(reporter.NewLogOnlyReporter(ch))
 	for _, c := range cases {
 		req := httptest.NewRequest("GET", c.path, nil)

@@ -627,6 +627,8 @@ var indexOrSimilar = regexp.MustCompile(`(?i)^/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(`(?i).*/\.env(\.\w+)*$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
+var unspecificWordpressPath = regexp.MustCompile(
+	`(?i)^(.*(/wp-login|/wp-includes)|/wp$|/wordpress$)`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
 var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$|param.*phpinfo\(\)`)
 var xmlRPCPath = regexp.MustCompile(`(?i).*/xml.?rpc(\.php(.\w+)?)?$`)
@@ -782,14 +784,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
 		h.report(r, "XMLRPC vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
-	case strings.Contains(r.URL.Path, "/wp-login") ||
-		strings.Contains(r.URL.Path, "/wp-includes"):
+	case unspecificWordpressPath.MatchString(r.URL.Path):
 		h.serveGenericUnhelpfulness(w, r)
 		h.report(r, "Wordpress probing", []string{"BadWebBot", "WebAppAttack"})
 	case strings.HasSuffix(r.URL.Path, ".php"):
 		h.serveGenericUnhelpfulness(w, r)
 		h.report(r, "PHP probing", []string{"BadWebBot", "WebAppAttack"})
-
 	default:
 		h.serveGenericUnhelpfulness(w, r)
 	}
