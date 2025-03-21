@@ -627,9 +627,11 @@ var indexOrSimilar = regexp.MustCompile(`(?i)^/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(`(?i).*/\.env(\.\w+)*$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
+var ueditorPaths = regexp.MustCompile(`ueditor.config.js`)
 var unspecificWordpressPath = regexp.MustCompile(
-	`(?i)^(.*(/wp-login|/wp-includes)|/wp$|/wordpress$)`)
+	`(?i)^(.*(/wp-login|/wp-includes|/wp-content|/wp-admin)|/wp$|/wordpress$)`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
+var phpInfoQuery = regexp.MustCompile(`(?i).*phpinfo\s*\(\)`)
 var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$|param.*phpinfo\(\)`)
 var xmlRPCPath = regexp.MustCompile(`(?i).*/xml.?rpc(\.php(.\w+)?)?$`)
 var springActuatorPath = regexp.MustCompile(`(?i).*/actuator/\w+$`)
@@ -673,7 +675,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveRobotsTxt(w, r)
 	case r.URL.Path == "/sitemap.xml":
 		h.serveSitemap(w, r)
-	case indexOrSimilar.MatchString(r.URL.Path):
+	case indexOrSimilar.MatchString(r.URL.Path) && !undeservingOfIndex(r):
 		h.serveContentEncodedFallback(w, r, "text/html", "content/index.html", "content/index.html")
 
 	case h.reporterSiteToken != "" && r.URL.Path == h.reporterSiteToken:
@@ -731,11 +733,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case phpIniPath.MatchString(r.URL.Path):
 		h.servePHPIni(w)
 		h.report(r, "PHP.ini file credential scraping", []string{"BadWebBot"})
-	case phpInfoPath.MatchString(r.URL.Path):
+	case phpInfoPath.MatchString(r.URL.Path) || phpInfoQuery.MatchString(r.URL.RawQuery):
 		h.servePHPInfo(w)
 		h.report(r, "phpinfo() credential scraping", []string{"BadWebBot"})
 	case strings.Contains(r.URL.RawQuery, "action=catchimage"):
 		h.report(r, "hansunCMS CVE-2023-2245 vulnerability prober", []string{"BadWebBot", "WebAppAttack", "Hacking"})
+		h.serveGenericUnhelpfulness(w, r)
+	case ueditorPaths.MatchString(r.URL.Path):
+		h.report(r, "Probing for hansunCMS", []string{"BadWebBot", "WebAppAttack", "Hacking"})
 		h.serveGenericUnhelpfulness(w, r)
 	case strings.Contains(r.URL.Path, "/pms") && strings.Contains(r.URL.RawQuery, "module=logging"):
 		h.report(r, "ColdFusion CVE-2024-20767 vulnerability prober", []string{"BadWebBot", "WebAppAttack", "Hacking"})
@@ -793,6 +798,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		h.serveGenericUnhelpfulness(w, r)
 	}
+}
+
+func undeservingOfIndex(r *http.Request) bool {
+	log.Printf("query=%s unworthy=%v",
+		r.URL.RawQuery, phpInfoQuery.MatchString(r.URL.RawQuery))
+	return phpInfoQuery.MatchString(r.URL.RawQuery)
 }
 
 func (h *Handler) serveGenericUnhelpfulness(w http.ResponseWriter, r *http.Request) {
