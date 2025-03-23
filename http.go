@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/aqua/nothingofvalue/reporter"
+	"github.com/hashicorp/golang-lru/v2/expirable"
 	"github.com/muhlemmer/httpforwarded"
 )
 
@@ -60,12 +61,16 @@ type Handler struct {
 	// How long to spend issuing a slow response.
 	SlowResponseDeadline time.Duration
 
+	escalations *expirable.LRU[string, int]
+
 	reporterSiteToken        string
 	reporterSiteTokenHandler http.HandlerFunc
 	reporter                 reporter.Reporter
 
-	templateInsert sync.Mutex
-	templates      sync.Map
+	templateInsert     sync.Mutex
+	templates          sync.Map
+	activeClients      map[string]bool
+	activeClientsMutex sync.Mutex
 }
 
 // serve a (correct, harmless) sitemap
@@ -556,7 +561,7 @@ func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 	}
 	w.Header().Set("Content-Type", randMimeType())
 	setHSTS(w)
-	log.Printf("serving slow gibberish as %s", w.Header().Get("Content-Type"))
+	log.Printf("serving slow gibberish as %s (deadline %s)", w.Header().Get("Content-Type"), h.SlowResponseDeadline)
 
 	rc := http.NewResponseController(w)
 	deadline := time.Now().Add(h.SlowResponseDeadline)
@@ -570,7 +575,10 @@ func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 			break
 		}
 		delay += time.Duration(1+rand.IntN(1000)) * time.Millisecond
+		log.Printf("considering aborting if %s is after %s",
+			time.Now().Add(delay), deadline)
 		if time.Now().Add(delay).After(deadline) {
+			log.Printf(".. it is")
 			break
 		}
 		time.Sleep(delay)
@@ -786,7 +794,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// keys.  The exact degree of repetition varies with the compression
 		// supported by the client; gzip at 1000x1000 is 217kB, zstd manages
 		// 1000x10000 in 70kB, while brotli can go 1000x100000 in only 5.4kB.
-		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
+		h.limitClientConcurrency(w, r, func(w http.ResponseWriter, r *http.Request) {
+			h.xmlrpcHandleEscalation(w, r)
+		})
 		h.report(r, "XMLRPC vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
 	case unspecificWordpressPath.MatchString(r.URL.Path):
@@ -840,6 +850,89 @@ func (h *Handler) serveGenericUnhelpfulness(w http.ResponseWriter, r *http.Reque
 		log.Printf("serving nothing")
 		// serve nothing
 	}
+}
+
+func escalationKey(r *http.Request) string {
+	if ip, err := extractRemoteAddr(r); err == nil {
+		return ip.String() + " " + r.URL.Path
+	}
+	return r.URL.Path
+}
+
+func (h *Handler) limitClientConcurrency(w http.ResponseWriter, r *http.Request, fn func(w http.ResponseWriter, r *http.Request)) {
+	k := ""
+	if ip, err := extractRemoteAddr(r); err == nil {
+		k = ip.String()
+	} else {
+		k = r.RemoteAddr
+	}
+	h.activeClientsMutex.Lock()
+	if h.activeClients[k] {
+		h.activeClientsMutex.Unlock()
+		http.Error(w, "", 429)
+		return
+	} else {
+		h.activeClients[k] = true
+		h.activeClientsMutex.Unlock()
+	}
+	fn(w, r)
+	h.activeClientsMutex.Lock()
+	delete(h.activeClients, k)
+	h.activeClientsMutex.Unlock()
+}
+
+// XML-RPC abuse bots tend to be quite aggressive, sending high-qps
+// attack streams.  Give them a couple of quick million-laughs responses
+// first, but after that start tarpitting, and if they keep calling,
+// start returning 404s to stop spending a thread on them.
+//
+// Wrapped by limitClientConcurrency so any further requests sent while
+// a tarpitted request is active are given 429s instead.
+func (h *Handler) xmlrpcHandleEscalation(w http.ResponseWriter, r *http.Request) {
+	k := escalationKey(r)
+	attempt, _ := h.escalations.Get(k)
+	if attempt < 2 {
+		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
+	} else if attempt < 50 {
+		tw := &TarpitWriter{
+			w:           w,
+			chunk:       20,
+			chunkJitter: 10,
+			delay:       200 * time.Millisecond,
+			httpRC:      http.NewResponseController(w),
+			jitter:      1 * time.Second,
+		}
+		tw.httpRC.SetWriteDeadline(time.Now().Add(h.SlowResponseDeadline))
+		makeLaughsXMLRPC(min(attempt, 8), tw)
+	} else {
+		http.Error(w, "", 404)
+	}
+	h.escalations.Add(k, attempt+1)
+}
+
+func makeLaughsXMLRPC(iter int, w io.Writer) {
+	s := `<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE rpcz [
+ <!ENTITY rpc "rpc">
+`
+	s += fmt.Sprintf("<!ENTITY rpc0 \"&rpc;&rpc;&rpc;&rpc;&rpc;&rpc;&rpc;&rpc;&rpc;&rpc;\">\n")
+	last := 0
+	for j := 1; j <= iter; j++ {
+		s += fmt.Sprintf("<!ENTITY rpc%d \"", j)
+		for k := 0; k < 10; k++ {
+			s += fmt.Sprintf("&rpc%d;", j-1)
+		}
+		s += "\">\n"
+		last = j
+	}
+	s += fmt.Sprintf(`<methodResponse>
+  <params>
+    <param>
+        <value><string>&rpc%d;</string></value>
+    </param>
+  </params>
+</methodResponse>`, last)
+	w.Write([]byte(s))
 }
 
 func extractRemoteAddr(r *http.Request) (net.IP, error) {
@@ -898,8 +991,11 @@ func NewHandler() *Handler {
 	mimeLoading.Do(func() {
 		osMimeTypes, _ = loadMimeFile("/etc/mime.types")
 	})
+
 	return &Handler{
 		SlowResponseLimit:    10,
 		SlowResponseDeadline: 29 * time.Second,
+		escalations:          expirable.NewLRU[string, int](500, nil, 4*time.Hour),
+		activeClients:        map[string]bool{},
 	}
 }

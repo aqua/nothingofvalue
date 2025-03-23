@@ -75,7 +75,7 @@ type AbuseIPDBReporter struct {
 
 func (r *AbuseIPDBReporter) Report(report *Report) error {
 	r.startReporter.Do(func() {
-		r.ch = make(chan *Report, 20)
+		r.ch = make(chan *Report, 50)
 		go r.reporter()
 	})
 	for _, n := range neverReportIPNets {
