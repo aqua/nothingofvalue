@@ -34,7 +34,7 @@ func TestFixedResponses(t *testing.T) {
 	}{
 		{"/", 200, re("Nothing valued is here")},
 		{"/robots.txt", 200, re("Disallow: /")},
-		{"/sitemap.xml", 200, re("<loc>.*</loc>")},
+		{"/llms.txt", 200, re(`##`)},
 		{"/favicon.ico", 404, nil},
 		{"/wlwmanifest.xml", 200, re("<?xml")},
 		{"/xmlrpc.php", 200, re("<param>")},

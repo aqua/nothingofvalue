@@ -167,6 +167,10 @@ func randHostname() string {
 	return randAlpha(4+rand.IntN(30)) + randTLD()
 }
 
+func randURL() string {
+	return "https://" + randHostname() + randUNIXPath()
+}
+
 func randIP() string {
 	return fmt.Sprintf("%d.%d.%d.%d",
 		rand.IntN(255), rand.IntN(255), rand.IntN(255), rand.IntN(255))
@@ -205,12 +209,26 @@ func randString(alphabet []byte, n int) string {
 	return string(o)
 }
 
-func randTextish(n int) string {
+func randWordlikes(n int) []string {
 	words := []string{}
 	for i := 0; i < n; {
 		w := randAlpha(1 + rand.IntN(10))
 		i += len(w) + 1
 		words = append(words, w)
+	}
+	return words
+}
+
+func randTextish(n int) string {
+	words := randWordlikes(n)
+	return strings.Join(words, " ")
+}
+
+func randSentence(n int) string {
+	words := randWordlikes(n)
+	if n > 0 {
+		words[0] = randUpperAlpha(1) + words[0]
+		words[len(words)-1] += "."
 	}
 	return strings.Join(words, " ")
 }
@@ -553,6 +571,22 @@ func (h *Handler) servePHPInfo(w http.ResponseWriter) {
 	}
 }
 
+// serveLLMsTXT emulates the markdown proposed for LLMs to use to understand
+// a website, because we all know "inference time" is totally the point where
+// this bullshit will be used.
+func (h *Handler) serveLLMsTXT(w http.ResponseWriter) {
+	fmt.Fprint(w, "# LLMs.txt\n\n")
+	for i := 1 + rand.IntN(10); i > 0; i-- {
+		fmt.Fprintf(w, "## %s\n\n", randTextish(1+rand.IntN(5)))
+		fmt.Fprintln(w, randSentence(40+rand.IntN(200)))
+		fmt.Fprint(w, "\n")
+		for j := 3 + rand.IntN(40); j > 0; j-- {
+			fmt.Fprintf(w, "- [%s](%s)\n", randTextish(1+rand.IntN(4)), randURL())
+		}
+		fmt.Fprint(w, "\n\n")
+	}
+}
+
 func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 	defer h.activeSlowResponses.Add(-1)
 	if h.activeSlowResponses.Add(1) > h.SlowResponseLimit {
@@ -699,6 +733,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.serveUnhelpfulHead(w, r)
 
 	// Beyond this point, though, all is malign.
+
+	case strings.HasPrefix(r.URL.Path, "/llms.txt"):
+		h.serveLLMsTXT(w)
 
 	// Windows Live Writer does not live here.  Exponential XML expansions do.
 	case strings.HasSuffix(r.URL.Path, "/wlwmanifest.xml"):
