@@ -808,8 +808,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func undeservingOfIndex(r *http.Request) bool {
-	log.Printf("query=%s unworthy=%v",
-		r.URL.RawQuery, phpInfoQuery.MatchString(r.URL.RawQuery))
 	return phpInfoQuery.MatchString(r.URL.RawQuery)
 }
 
