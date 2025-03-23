@@ -575,10 +575,7 @@ func (h *Handler) serveSlowDribble(w http.ResponseWriter) {
 			break
 		}
 		delay += time.Duration(1+rand.IntN(1000)) * time.Millisecond
-		log.Printf("considering aborting if %s is after %s",
-			time.Now().Add(delay), deadline)
 		if time.Now().Add(delay).After(deadline) {
-			log.Printf(".. it is")
 			break
 		}
 		time.Sleep(delay)
