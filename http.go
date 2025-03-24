@@ -50,6 +50,12 @@ func setHSTS(w http.ResponseWriter) {
 //go:embed content/phpinfo.html
 var content embed.FS
 
+//go:embed content/english-letters-weighted-uppercase
+var frequencyWeightedUpperAlphabet []byte
+
+//go:embed content/english-letters-weighted-lowercase
+var frequencyWeightedLowerAlphabet []byte
+
 type Handler struct {
 	activeSlowResponses atomic.Int32
 
@@ -209,10 +215,11 @@ func randString(alphabet []byte, n int) string {
 	return string(o)
 }
 
+// Returns word-like strings of roughly length n (in characters).
 func randWordlikes(n int) []string {
 	words := []string{}
 	for i := 0; i < n; {
-		w := randAlpha(1 + rand.IntN(10))
+		w := randEnglishLower(1 + rand.IntN(10))
 		i += len(w) + 1
 		words = append(words, w)
 	}
@@ -224,10 +231,20 @@ func randTextish(n int) string {
 	return strings.Join(words, " ")
 }
 
+func randCapitalizedTextish(n int) string {
+	words := randWordlikes(n)
+	if n > 0 {
+		words[0] = randEnglishUpper(1) + words[0]
+	}
+	return strings.Join(words, " ")
+}
+
+// Returns a sentence-like things of word-like things, approximately n
+// characters long.
 func randSentence(n int) string {
 	words := randWordlikes(n)
 	if n > 0 {
-		words[0] = randUpperAlpha(1) + words[0]
+		words[0] = randEnglishUpper(1) + words[0]
 		words[len(words)-1] += "."
 	}
 	return strings.Join(words, " ")
@@ -238,9 +255,14 @@ func randUpperAlpha(n int) string            { return randString(upperAlphabet, 
 func randAlphaNumeric(n int) string          { return randString(alphanumerics, n) }
 func randUpperAlphaNumeric(n int) string     { return randString(upperAlphaNumerics, n) }
 func randAlphaMixedCaseNumeric(n int) string { return randString(alphaMixedCaseNumerics, n) }
-func randLowerHex(n int) string              { return randString(lowerHex, n) }
-func randUpperHex(n int) string              { return randString(upperHex, n) }
-func randPassword(n int) string              { return randString(passwordChars, n) }
+func randEnglishCapitalized(n int) string {
+	return randString(frequencyWeightedUpperAlphabet, 1) + randString(frequencyWeightedLowerAlphabet, n-1)
+}
+func randEnglishLower(n int) string { return randString(frequencyWeightedLowerAlphabet, n) }
+func randEnglishUpper(n int) string { return randString(frequencyWeightedUpperAlphabet, n) }
+func randLowerHex(n int) string     { return randString(lowerHex, n) }
+func randUpperHex(n int) string     { return randString(upperHex, n) }
+func randPassword(n int) string     { return randString(passwordChars, n) }
 
 var mimeLoading sync.Once
 var osMimeTypes []string
@@ -577,11 +599,15 @@ func (h *Handler) servePHPInfo(w http.ResponseWriter) {
 func (h *Handler) serveLLMsTXT(w http.ResponseWriter) {
 	fmt.Fprint(w, "# LLMs.txt\n\n")
 	for i := 1 + rand.IntN(10); i > 0; i-- {
-		fmt.Fprintf(w, "## %s\n\n", randTextish(1+rand.IntN(5)))
+		fmt.Fprintf(w, "## %s\n\n", randEnglishCapitalized(1+rand.IntN(5)))
 		fmt.Fprintln(w, randSentence(40+rand.IntN(200)))
 		fmt.Fprint(w, "\n")
 		for j := 3 + rand.IntN(40); j > 0; j-- {
-			fmt.Fprintf(w, "- [%s](%s)\n", randTextish(1+rand.IntN(4)), randURL())
+			fmt.Fprintf(w, "- [%s](%s)", randCapitalizedTextish(8+rand.IntN(15)), randURL())
+			if rand.IntN(2) == 1 {
+				fmt.Fprint(w, ": "+randTextish(30+rand.IntN(40)))
+			}
+			fmt.Fprint(w, "\n")
 		}
 		fmt.Fprint(w, "\n\n")
 	}
