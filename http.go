@@ -250,24 +250,6 @@ func randSentence(n int) string {
 	return strings.Join(words, " ")
 }
 
-var englishLetterFrequency = [26]uint16{14810, 2715, 4943, 7874, 21912, 4200, 3693, 10795, 13318, 188, 1257, 7253, 4761, 12666, 14003, 3316, 205, 10977, 11450, 16587, 5246, 2019, 3819, 315, 3853, 128}
-var englishLetterFrequencyDenom = 182303
-
-func randEnglishLowerFT(n int) string {
-	str := make([]byte, n)
-	for i := 0; i < n; i++ {
-		b := rand.IntN(englishLetterFrequencyDenom)
-		for j, fq := 0, 0; fq < b; j++ {
-			if fq > b {
-				str[i] = 'a' + byte(j)
-				break
-			}
-			fq += int(englishLetterFrequency[j])
-		}
-	}
-	return string(str)
-}
-
 func randAlpha(n int) string                 { return randString(alphabet, n) }
 func randUpperAlpha(n int) string            { return randString(upperAlphabet, n) }
 func randAlphaNumeric(n int) string          { return randString(alphanumerics, n) }

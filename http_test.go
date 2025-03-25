@@ -143,7 +143,7 @@ func TestReporting(t *testing.T) {
 }
 
 func randEnglishLowerCorrectness(t *testing.T) {
-	lt := randEnglishLowerFT(50)
+	lt := randEnglishLower(50)
 	if len(lt) != 50 {
 		t.Errorf("rand english: want len %d, got %d", 50, len(lt))
 	}
@@ -154,12 +154,6 @@ func randEnglishLowerCorrectness(t *testing.T) {
 }
 
 const randEnglishIterations = 50
-
-func BenchmarkRandEnglishFrequencyTable(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = randEnglishLowerFT(randEnglishIterations)
-	}
-}
 
 func BenchmarkRandEnglishWeightedRepetitions(b *testing.B) {
 	for i := 0; i < b.N; i++ {
