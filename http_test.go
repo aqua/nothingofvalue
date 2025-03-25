@@ -141,3 +141,28 @@ func TestReporting(t *testing.T) {
 		}
 	}
 }
+
+func randEnglishLowerCorrectness(t *testing.T) {
+	lt := randEnglishLowerFT(50)
+	if len(lt) != 50 {
+		t.Errorf("rand english: want len %d, got %d", 50, len(lt))
+	}
+	m := regexp.MustCompile(`^[a-z]{50}$`)
+	if !m.MatchString(lt) {
+		t.Errorf("rand english: wanted [a-z]{50}, got %q", lt)
+	}
+}
+
+const randEnglishIterations = 50
+
+func BenchmarkRandEnglishFrequencyTable(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = randEnglishLowerFT(randEnglishIterations)
+	}
+}
+
+func BenchmarkRandEnglishWeightedRepetitions(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = randEnglishLower(randEnglishIterations)
+	}
+}
