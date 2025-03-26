@@ -31,13 +31,14 @@ Demo:
 
 *  [Harmless homepage](https://sev2.com/)
 *  [robots.txt](https://sev2.com/robots.txt)
-*  [.git/config](https://sev2.com/foo/.git/config)
-*  [VSCode STFP config](https://sev2.com/bar/ftp-sync.json)
-*  [AWS Credentials](https://sev2.com/baz/.AWS/credentials)
-*  [Node .env](https://sev2.com/something/.env)
-*  [PHP .ini](https://sev2.com/something/php.ini)
-*  [Random path of no meaning](https://sev2.com/something/unrecognized)
-*  [Arbitrary JSON](https://sev2.com/arbitrary.json)
+*  [llms.txt](https://sev2.com/llms.txt)
+*  [.git/config](https://sev2.com/demo/.git/config)
+*  [VSCode STFP config](https://sev2.com/demo/ftp-sync.json)
+*  [AWS Credentials](https://sev2.com/demo/.AWS/credentials)
+*  [Node .env](https://sev2.com/demo/.env)
+*  [PHP .ini](https://sev2.com/demo/php.ini)
+*  [Random path of no meaning](https://sev2.com/demo/something/unrecognized)
+*  [Arbitrary JSON](https://sev2.com/demo/arbitrary.json)
 *  More-hostile requests you can make; your actual results will vary
    depending on your browser's supported transport encodings:
    *  .zip
