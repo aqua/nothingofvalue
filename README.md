@@ -34,9 +34,12 @@ Demo:
 *  [llms.txt](https://sev2.com/llms.txt)
 *  [.git/config](https://sev2.com/demo/.git/config)
 *  [VSCode STFP config](https://sev2.com/demo/ftp-sync.json)
+*  [Atom .ftpconfig](https://sev2.com/demo/.ftpconfig)
 *  [AWS Credentials](https://sev2.com/demo/.AWS/credentials)
+*  [Sendgrid Credentials](https://sev2.com/demo/sendgrid.env)
 *  [Node .env](https://sev2.com/demo/.env)
 *  [PHP .ini](https://sev2.com/demo/php.ini)
+*  [phpinfo()](https://sev2.com/demo/phpinfo.php)
 *  [Random path of no meaning](https://sev2.com/demo/something/unrecognized)
 *  [Arbitrary JSON](https://sev2.com/demo/arbitrary.json)
 *  More-hostile requests you can make; your actual results will vary
