@@ -758,6 +758,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Bulk HEAD requests tend
 	case r.Method == "HEAD":
 		h.serveUnhelpfulHead(w, r)
+		if unspecificWordpressPath.MatchString(r.URL.Path) {
+			h.report(r, "Wordpress probing", []string{"BadWebBot", "WebAppAttack"})
+		} else if strings.HasSuffix(r.URL.Path, ".php") {
+			h.report(r, "PHP probing", []string{"BadWebBot", "WebAppAttack"})
+		}
 
 	// Beyond this point, though, all is malign.
 
