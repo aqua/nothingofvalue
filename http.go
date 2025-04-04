@@ -871,10 +871,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(r.URL.Path, ".json"):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 	case strings.HasSuffix(r.URL.Path, "/_catalog") ||
-		springActuatorPath.MatchString(r.URL.Path) ||
-		strings.Contains(r.URL.Path, "/_all_dbs"):
+		springActuatorPath.MatchString(r.URL.Path):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 		h.report(r, "AJAX API vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
+	case strings.Contains(r.URL.Path, "/_all_dbs"):
+		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
+		h.report(r, "CouchDB prober", []string{"BadWebBot", "WebAppAttack"})
+	case strings.Contains(r.URL.Path, "microsoft.exchange.ediscovery.exporttool.application"):
+		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
+		h.report(r, "MS Exchange vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
 	case xmlRPCPath.MatchString(r.URL.Path):
 		// XMLRPC supports arbitrary response param structure nesting, but most
