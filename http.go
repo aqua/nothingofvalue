@@ -604,7 +604,6 @@ func (h *Handler) serveWordpressAbuse(w http.ResponseWriter, r *http.Request) {
 	if wpJSONFragments.MatchString(r.URL.Path) || wpJSONFragments.MatchString(r.URL.RawQuery) {
 		wantsType = "json"
 	}
-	log.Printf("wordpress: wants %s", wantsType)
 
 	// JSON parsers are only worth harassing if they accept a compressed
 	// response
@@ -872,7 +871,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(r.URL.Path, ".json"):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 	case strings.HasSuffix(r.URL.Path, "/_catalog") ||
-		springActuatorPath.MatchString(r.URL.Path):
+		springActuatorPath.MatchString(r.URL.Path) ||
+		strings.Contains(r.URL.Path, "/_all_dbs"):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 		h.report(r, "AJAX API vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 

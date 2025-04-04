@@ -121,6 +121,7 @@ func TestReporting(t *testing.T) {
 		{"/.env", re(`credential scraping`)},
 		{"/.AWS/credentials", re(`credential scraping`)},
 		{"/_catalog", re(`vulnerability prober`)},
+		{"/_all_dbs", re(`vulnerability prober`)},
 		{"/wp-json/abuseme", re(`Wordpress probing`)},
 		{"/wp-includes/abuseme", re(`Wordpress probing`)},
 		{"/?rest_route=/wp/v2/users/", re(`Wordpress probing`)},
