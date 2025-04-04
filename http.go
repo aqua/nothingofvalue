@@ -696,6 +696,8 @@ var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var ueditorPaths = regexp.MustCompile(`ueditor.config.js`)
 var unspecificWordpressPath = regexp.MustCompile(
 	`(?i)^(.*(/wp-login|/wp-includes|/wp-content|/wp-admin)|/wp$|/wordpress$)`)
+var smuggledWordpressQuery = regexp.MustCompile(
+	`.*\w+=/(wp|wordpress.?\d*)/`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
 var phpInfoQuery = regexp.MustCompile(`(?i).*phpinfo\s*\(\)`)
 var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$|param.*phpinfo\(\)`)
@@ -865,7 +867,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		})
 		h.report(r, "XMLRPC vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
-	case unspecificWordpressPath.MatchString(r.URL.Path):
+	case unspecificWordpressPath.MatchString(r.URL.Path) || smuggledWordpressQuery.MatchString(r.URL.RawQuery):
 		h.serveGenericUnhelpfulness(w, r)
 		h.report(r, "Wordpress probing", []string{"BadWebBot", "WebAppAttack"})
 	case strings.HasSuffix(r.URL.Path, ".php"):
@@ -877,7 +879,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func undeservingOfIndex(r *http.Request) bool {
-	return phpInfoQuery.MatchString(r.URL.RawQuery)
+	return phpInfoQuery.MatchString(r.URL.RawQuery) || smuggledWordpressQuery.MatchString(r.URL.RawQuery)
 }
 
 func (h *Handler) serveGenericUnhelpfulness(w http.ResponseWriter, r *http.Request) {
