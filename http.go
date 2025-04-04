@@ -594,6 +594,30 @@ func (h *Handler) servePHPInfo(w http.ResponseWriter) {
 	}
 }
 
+var wpJSONFragments = regexp.MustCompile(
+	`wp-json|wp-users|wp(/\w+)?/users`)
+
+// Wordpress attacks are such a large share of bot traffic it needs some
+// more detailed handling
+func (h *Handler) serveWordpressAbuse(w http.ResponseWriter, r *http.Request) {
+	wantsType := "generic"
+	if wpJSONFragments.MatchString(r.URL.Path) || wpJSONFragments.MatchString(r.URL.RawQuery) {
+		wantsType = "json"
+	}
+	log.Printf("wordpress: wants %s", wantsType)
+
+	// JSON parsers are only worth harassing if they accept a compressed
+	// response
+	if wantsType == "json" && r.Header.Get("Accept-Encoding") == "" {
+		wantsType = "generic"
+	}
+	if wantsType == "json" {
+		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
+	} else {
+		h.serveGenericUnhelpfulness(w, r)
+	}
+}
+
 // serveLLMsTXT emulates the markdown proposed for LLMs to use to understand
 // a website, because we all know "inference time" is totally the point where
 // this bullshit will be used.
@@ -695,7 +719,7 @@ var nodeDotEnvPath = regexp.MustCompile(`(?i).*/\.env(\.\w+)*$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var ueditorPaths = regexp.MustCompile(`ueditor.config.js`)
 var unspecificWordpressPath = regexp.MustCompile(
-	`(?i)^(.*(/wp-login|/wp-includes|/wp-content|/wp-admin)|/wp$|/wordpress$)`)
+	`(?i)^(.*(/wp-login|/wp-includes|/wp-content|/wp-json|/wp-admin)|/wp$|/wordpress$)`)
 var smuggledWordpressQuery = regexp.MustCompile(
 	`.*\w+=/(wp|wordpress.?\d*)/`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
@@ -847,10 +871,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// we fall back to an empty response.
 	case strings.HasSuffix(r.URL.Path, ".json"):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
-	case (strings.HasSuffix(r.URL.Path, "/_catalog") ||
-		springActuatorPath.MatchString(r.URL.Path) ||
-		strings.HasSuffix(r.URL.Path, "/wp-json") ||
-		strings.Contains(r.URL.Path, "/wp-json/")):
+	case strings.HasSuffix(r.URL.Path, "/_catalog") ||
+		springActuatorPath.MatchString(r.URL.Path):
 		h.serveContentEncoded(w, r, "application/json", "content/600d20000.json")
 		h.report(r, "AJAX API vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
@@ -868,7 +890,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.report(r, "XMLRPC vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
 	case unspecificWordpressPath.MatchString(r.URL.Path) || smuggledWordpressQuery.MatchString(r.URL.RawQuery):
-		h.serveGenericUnhelpfulness(w, r)
+		h.serveWordpressAbuse(w, r)
 		h.report(r, "Wordpress probing", []string{"BadWebBot", "WebAppAttack"})
 	case strings.HasSuffix(r.URL.Path, ".php"):
 		h.serveGenericUnhelpfulness(w, r)
