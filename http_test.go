@@ -49,6 +49,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/.env", 200, re(`API_KEY=.+`)},
 		{"/.env.production.foo", 200, re(`API_KEY=.+`)},
 		{"/.npmrc", 200, re(`_authToken=\w+`)},
+		{"/.npmrc-publish", 200, re(`_authToken=\w+`)},
 		{"/php.ini", 200, re(`default_user=.+`)},
 		{"/phpinfo.php", 200, re(`href="https?://www.php.net/`)},
 		{"/index.php?s=/index/index/name/$%7B@phpinfo()%7D", 200, re(`href="https?://www.php.net/`)},

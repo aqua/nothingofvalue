@@ -777,6 +777,7 @@ func (h *Handler) serveRandom400(w http.ResponseWriter) {
 var indexOrSimilar = regexp.MustCompile(`(?i)^/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
 var nodeDotEnvPath = regexp.MustCompile(`(?i).*/\.env(\.\w+)*$`)
+var npmrcPath = regexp.MustCompile(`(?i).*/\.npmrc(.\w+)*$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var ueditorPaths = regexp.MustCompile(`ueditor.config.js`)
 var unspecificWordpressPath = regexp.MustCompile(
@@ -891,16 +892,16 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.report(r, "AWS credential scraping", []string{"BadWebBot"})
 	case nodeDotEnvPath.MatchString(r.URL.Path):
 		h.serveNodeDotEnv(w)
-		h.report(r, "Node.js .env file credential scraping", []string{"BadWebBot"})
-	case strings.Contains(r.URL.Path, "/.npmrc"):
+		h.report(r, "Node.js .env file credential scraping", []string{"BadWebBot", "Hacking"})
+	case npmrcPath.MatchString(r.URL.Path):
 		h.serveNpmrc(w, r)
-		h.report(r, "Node.js .npmrc file credential scraping", []string{"BadWebBot"})
+		h.report(r, "Node.js .npmrc file credential scraping", []string{"BadWebBot", "Hacking"})
 	case phpIniPath.MatchString(r.URL.Path):
 		h.servePHPIni(w)
-		h.report(r, "PHP.ini file credential scraping", []string{"BadWebBot"})
+		h.report(r, "PHP.ini file credential scraping", []string{"BadWebBot", "Hacking"})
 	case phpInfoPath.MatchString(r.URL.Path) || phpInfoQuery.MatchString(r.URL.RawQuery):
 		h.servePHPInfo(w)
-		h.report(r, "phpinfo() credential scraping", []string{"BadWebBot"})
+		h.report(r, "phpinfo() credential scraping", []string{"BadWebBot", "Hacking"})
 	case strings.Contains(r.URL.RawQuery, "action=catchimage"):
 		h.report(r, "hansunCMS CVE-2023-2245 vulnerability prober", []string{"BadWebBot", "WebAppAttack", "Hacking"})
 		h.serveGenericUnhelpfulness(w, r)
