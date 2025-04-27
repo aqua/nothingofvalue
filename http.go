@@ -667,6 +667,18 @@ require_once ABSPATH . 'wp-settings.php';
 		randUNIXPath())
 }
 
+func (h *Handler) serveNpmrc(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(w, `
+# %s
+//registry.npmjs.org/:_authToken=%s
+registry=https://registry.npmjs.org/
+always-auth=true
+`,
+		randSentence(60+rand.IntN(40)),
+		randUpperHex(64))
+}
+
 // serveLLMsTXT emulates the markdown proposed for LLMs to use to understand
 // a website, because we all know "inference time" is totally the point where
 // this bullshit will be used.
@@ -880,6 +892,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case nodeDotEnvPath.MatchString(r.URL.Path):
 		h.serveNodeDotEnv(w)
 		h.report(r, "Node.js .env file credential scraping", []string{"BadWebBot"})
+	case strings.Contains(r.URL.Path, "/.npmrc"):
+		h.serveNpmrc(w, r)
+		h.report(r, "Node.js .npmrc file credential scraping", []string{"BadWebBot"})
 	case phpIniPath.MatchString(r.URL.Path):
 		h.servePHPIni(w)
 		h.report(r, "PHP.ini file credential scraping", []string{"BadWebBot"})
