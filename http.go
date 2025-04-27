@@ -594,6 +594,7 @@ func (h *Handler) servePHPInfo(w http.ResponseWriter) {
 	}
 }
 
+var wpConfigPath = regexp.MustCompile(`wp-config(.sample)?.php`)
 var wpJSONFragments = regexp.MustCompile(
 	`wp-json|wp-users|wp(/\w+)?/users`)
 
@@ -615,6 +616,55 @@ func (h *Handler) serveWordpressAbuse(w http.ResponseWriter, r *http.Request) {
 	} else {
 		h.serveGenericUnhelpfulness(w, r)
 	}
+}
+
+func (h *Handler) serveWordpressConfig(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/php")
+	fmt.Fprintf(w, `<?php
+/**
+ * The base configuration for WordPress
+ * %s
+ *
+ * @link https://developer.wordpress.org/advanced-administration/wordpress/wp-config/
+ *
+ * @package WordPress
+ **/
+define('DB_NAME', '%s');
+define('DB_USER', '%s');
+define('DB_PASSWORD', '%s');
+define('DB_HOST', '%s');
+define('DB_CHARSET', 'utf8');
+define('DB_COLLATE', '');
+define('AUTH_KEY', '%s');
+define('SECURE_AUTH_KEY', '%s');
+define('LOGGED_IN_KEY', '%s');
+define('NONCE_KEY', '%s');
+define('AUTH_SALT', '%s');
+define('SECURE_AUTH_SALT', '%s');
+define('LOGGED_IN_SALT', '%s');
+define('NONCE_SALT', '%s');
+$table_prefix = '%s_';
+define('WP_DEBUG', true);
+if (!defined('ABSPATH')) {
+	define('ABSPATH', __DIR__ . '%s');
+}
+/** Sets up WordPress vars and included files. */
+require_once ABSPATH . 'wp-settings.php';
+ `, randSentence(100+rand.IntN(100)),
+		randAlpha(8+rand.IntN(10)),
+		randAlpha(8+rand.IntN(10)),
+		randPassword(8+rand.IntN(10)),
+		randHostname(),
+		randPassword(64),
+		randPassword(64),
+		randPassword(64),
+		randPassword(64),
+		randPassword(64),
+		randPassword(64),
+		randPassword(64),
+		randPassword(64),
+		randAlpha(2+rand.IntN(6)),
+		randUNIXPath())
 }
 
 // serveLLMsTXT emulates the markdown proposed for LLMs to use to understand
@@ -721,6 +771,7 @@ var unspecificWordpressPath = regexp.MustCompile(
 	`(?i)^(.*(/wp-login|/wp-includes|/wp-content|/wp-json|/wp-admin)|/wp$|/wordpress$)`)
 var smuggledWordpressQuery = regexp.MustCompile(
 	`.*\w+=/(wp|wordpress.?\d*)/`)
+var wordPressQueryParam = regexp.MustCompile(`author=\d+`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
 var phpInfoQuery = regexp.MustCompile(`(?i).*phpinfo\s*\(\)`)
 var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$|param.*phpinfo\(\)`)
@@ -894,7 +945,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		})
 		h.report(r, "XMLRPC vulnerability prober", []string{"BadWebBot", "WebAppAttack"})
 
-	case unspecificWordpressPath.MatchString(r.URL.Path) || smuggledWordpressQuery.MatchString(r.URL.RawQuery):
+	case wpConfigPath.MatchString(r.URL.Path):
+		h.serveWordpressConfig(w, r)
+		h.report(r, "Wordpress credential scraper", []string{"BadWebBot", "WebAppAttack"})
+
+	case isWordpressAbuse(r):
 		h.serveWordpressAbuse(w, r)
 		h.report(r, "Wordpress probing", []string{"BadWebBot", "WebAppAttack"})
 	case strings.HasSuffix(r.URL.Path, ".php"):
@@ -905,8 +960,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func isWordpressAbuse(r *http.Request) bool {
+	return phpInfoQuery.MatchString(r.URL.RawQuery) || smuggledWordpressQuery.MatchString(r.URL.RawQuery) || wordPressQueryParam.MatchString(r.URL.RawQuery)
+}
+
 func undeservingOfIndex(r *http.Request) bool {
-	return phpInfoQuery.MatchString(r.URL.RawQuery) || smuggledWordpressQuery.MatchString(r.URL.RawQuery)
+	log.Printf("considering %q", r.URL.RawQuery)
+	return isWordpressAbuse(r)
 }
 
 func (h *Handler) serveGenericUnhelpfulness(w http.ResponseWriter, r *http.Request) {

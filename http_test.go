@@ -38,6 +38,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/favicon.ico", 404, nil},
 		{"/wlwmanifest.xml", 200, re("<?xml")},
 		{"/xmlrpc.php", 200, re("<param>")},
+		{"/wp-config.php", 200, re(`'ABSPATH`)},
 		{"/.git/config", 200, re(`\[credential `)},
 		{"/.git/logs/HEAD", 200, re(`commit: `)},
 		{"/.ftp-sync.json", 200, re(`remotePath: *".*"`)},
