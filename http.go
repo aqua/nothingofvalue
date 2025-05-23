@@ -892,7 +892,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		awsCredentialPath.MatchString(r.URL.RawQuery):
 		h.serveAWSCLICredentials(w)
 		h.report(r, "AWS credential scraping", []string{"BadWebBot"})
-	case nodeDotEnvPath.MatchString(r.URL.Path):
+	case nodeDotEnvPath.MatchString(r.URL.Path) || strings.Contains("vite/env"):
 		h.serveNodeDotEnv(w)
 		h.report(r, "Node.js .env file credential scraping", []string{"BadWebBot", "Hacking"})
 	case npmrcPath.MatchString(r.URL.Path):
