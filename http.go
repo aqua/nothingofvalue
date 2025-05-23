@@ -787,7 +787,7 @@ var smuggledWordpressQuery = regexp.MustCompile(
 var wordPressQueryParam = regexp.MustCompile(`author=\d+`)
 var phpIniPath = regexp.MustCompile(`(?i).*/\.?php.ini(.bac?k(up?))?$`)
 var phpInfoQuery = regexp.MustCompile(`(?i).*phpinfo\s*\(\)`)
-var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info.php$|param.*phpinfo\(\)`)
+var phpInfoPath = regexp.MustCompile(`(?i).*/\.?php.?info(.php)?$|param.*phpinfo\(\)`)
 var xmlRPCPath = regexp.MustCompile(`(?i).*/xml.?rpc(\.php(.\w+)?)?$`)
 var springActuatorPath = regexp.MustCompile(`(?i).*/actuator/\w+$`)
 
@@ -862,8 +862,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case strings.HasSuffix(r.URL.Path, "/wlwmanifest.xml"):
 		h.serveFile(w, "text/xml", "content/wlwmanifest.xml")
 	// The only YAML files we have are also exponentially referential.
-	case yamlPath.MatchString(r.URL.Path):
+	case yamlPath.MatchString(r.URL.Path) || yamlPath.MatchString(r.URL.RawQuery):
 		h.serveFile(w, "text/yaml", "content/muchyaml.yaml")
+	case strings.Contains(r.URL.Path, "/pom.properties"):
+		h.serveContentEncodedFallback(w, r, "text/xml", "content/xmlrpc.xml", "content/xmlrpc.xml")
 
 	// Secondhand git credentials, surely valuable to someone
 	case strings.HasSuffix(r.URL.Path, "/.git/config"):
