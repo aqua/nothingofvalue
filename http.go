@@ -776,7 +776,8 @@ func (h *Handler) serveRandom400(w http.ResponseWriter) {
 
 var indexOrSimilar = regexp.MustCompile(`(?i)^/+(index(\.\w+)?)?$`)
 var awsCredentialPath = regexp.MustCompile(`(?i)/\.AWS_*/credentials$`)
-var nodeDotEnvPath = regexp.MustCompile(`(?i).*/\.env(\.\w+)*$`)
+var nodeDotEnvPath = regexp.MustCompile(`(?i)(^|.*/)\.env(\.\w+)*$`)
+var nodeDotEnvQuery = regexp.MustCompile(`(?i).*url=\.env$`)
 var npmrcPath = regexp.MustCompile(`(?i).*/\.npmrc(.\w+)*$`)
 var yamlPath = regexp.MustCompile(`(?i).*/[\w-.]+.ya?ml(.bac?k(up)?)?$`)
 var ueditorPaths = regexp.MustCompile(`ueditor.config.js`)
@@ -892,7 +893,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		awsCredentialPath.MatchString(r.URL.RawQuery):
 		h.serveAWSCLICredentials(w)
 		h.report(r, "AWS credential scraping", []string{"BadWebBot"})
-	case nodeDotEnvPath.MatchString(r.URL.Path) || strings.Contains("vite/env"):
+	case nodeDotEnvPath.MatchString(r.URL.Path) || strings.Contains(r.URL.Path, "vite/env") || nodeDotEnvQuery.MatchString(r.URL.RawQuery):
 		h.serveNodeDotEnv(w)
 		h.report(r, "Node.js .env file credential scraping", []string{"BadWebBot", "Hacking"})
 	case npmrcPath.MatchString(r.URL.Path):
@@ -982,9 +983,15 @@ func isWordpressAbuse(r *http.Request) bool {
 	return phpInfoQuery.MatchString(r.URL.RawQuery) || smuggledWordpressQuery.MatchString(r.URL.RawQuery) || wordPressQueryParam.MatchString(r.URL.RawQuery)
 }
 
+var urlParamRE = regexp.MustCompile(`url=`)
+
+func isURLParamAbuse(r *http.Request) bool {
+	return urlParamRE.MatchString(r.URL.RawQuery)
+}
+
 func undeservingOfIndex(r *http.Request) bool {
 	log.Printf("considering %q", r.URL.RawQuery)
-	return isWordpressAbuse(r)
+	return isWordpressAbuse(r) || isURLParamAbuse(r)
 }
 
 func (h *Handler) serveGenericUnhelpfulness(w http.ResponseWriter, r *http.Request) {

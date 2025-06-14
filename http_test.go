@@ -49,6 +49,7 @@ func TestFixedResponses(t *testing.T) {
 		{"/.aws/credentials", 200, re(`aws_access_key_id=A`)},
 		{"/.env", 200, re(`API_KEY=.+`)},
 		{"/.env.production.foo", 200, re(`API_KEY=.+`)},
+		{"/?url=.env", 200, re(`API_KEY=.+`)},
 		{"/.npmrc", 200, re(`_authToken=\w+`)},
 		{"/.npmrc-publish", 200, re(`_authToken=\w+`)},
 		{"/php.ini", 200, re(`default_user=.+`)},
